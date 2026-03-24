@@ -198,6 +198,7 @@ async function loadFleet(el){
     for(const a of d.agents){
       h+='<div class="card"><div class="agent-header"><span class="dot '+a.status+'"></span><span class="agent-name">'+esc(a.name)+'</span></div>';
       h+='<div class="agent-id">'+a.agent_id+'</div>';
+      if(a.relationship)h+='<div style="font-size:11px;color:var(--purple);margin-bottom:4px">&#128101; '+esc(a.relationship)+'</div>';
       h+='<div class="caps">';for(const c of a.capabilities)h+='<span class="cap">'+esc(c)+'</span>';h+='</div>';
       h+='<div class="agent-meta"><span>任务: '+a.active_task_count+'</span>';
       if(a.avg_delivery_hours!==null)h+='<span>平均交付: '+a.avg_delivery_hours+'h</span>';
@@ -219,6 +220,7 @@ window.showAddAgent=function(){
   ov.innerHTML='<div class="form-card"><h3>+ 添加碳基节点</h3>'
     +'<div class="fg"><label>节点名称</label><input id="aa-name" placeholder="例: 前端老李"/></div>'
     +'<div class="fg"><label>技能标签</label><input id="aa-caps" placeholder="例: UI/UX, 前端开发, 抗压能力强"/><div class="hint">多个标签用逗号分隔</div></div>'
+    +'<div class="fg"><label>与你的关系 <span style="color:var(--text-dim);font-weight:400">(可选)</span></label><input id="aa-rel" placeholder="例: 直属下属 / 实习生 / 外包同事 / 义弟"/><div class="hint">描述此人与你的关系，AI 规划和模拟交付时会参考</div></div>'
     +'<div class="btn-group"><button class="btn btn-primary" onclick="submitAgent()">注册节点</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div></div>';
   document.body.appendChild(ov);
   document.getElementById('aa-name').focus();
@@ -226,10 +228,11 @@ window.showAddAgent=function(){
 window.submitAgent=async function(){
   const name=document.getElementById('aa-name').value.trim();
   const caps=document.getElementById('aa-caps').value.trim();
+  const rel=document.getElementById('aa-rel').value.trim();
   if(!name){toast('请输入节点名称',false);return}
   if(!caps){toast('请输入至少一个技能标签',false);return}
   try{
-    const r=await fetch(API+'/nodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,capabilities:caps.split(',').map(s=>s.trim()).filter(Boolean)})});
+    const r=await fetch(API+'/nodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,capabilities:caps.split(',').map(s=>s.trim()).filter(Boolean),relationship:rel})});
     const d=await r.json();
     if(!r.ok){toast(d.error||'注册失败',false);return}
     toast('节点 '+d.agent_id+' 注册成功！',true);
@@ -513,6 +516,7 @@ window.showTaskDetail=function(traceId){
     // Input for resume/reject
     h+='<div class="fg" style="margin-top:16px"><label>提交 Human 交付物</label><textarea id="td-payload" rows="4" placeholder="粘贴交付物内容、GitHub PR/Commit URL、工作汇报等..."></textarea><div class="hint">支持贴 GitHub URL（PR、Commit、Issue），AI 审查时会分析</div></div>';
     h+='<div class="btn-group">';
+    h+='<button class="btn btn-primary btn-sm" onclick="simulateDelivery(\\''+t.trace_id+'\\')">&#129302; 模拟交付</button>';
     h+='<button class="btn btn-green" onclick="taskResume(\\''+t.trace_id+'\\')">提交交付 (Resume)</button>';
     h+='<button class="btn btn-danger" onclick="taskReject(\\''+t.trace_id+'\\')">打回重做 (Reject)</button>';
     h+='<button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button>';
@@ -546,6 +550,21 @@ window.taskReject=async function(traceId){
     document.getElementById('overlay').remove();
     load('pipeline');
   }catch{toast('网络错误',false)}
+};
+
+window.simulateDelivery=async function(traceId){
+  const btn=event.target;
+  const origText=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='&#8987; AI 生成中...';
+  try{
+    const r=await fetch(API+'/tasks/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trace_id:traceId})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'模拟失败',false);btn.disabled=false;btn.innerHTML=origText;return}
+    const ta=document.getElementById('td-payload');
+    if(ta)ta.value=d.simulated_delivery;
+    toast('已生成模拟交付内容',true);
+    btn.disabled=false;btn.innerHTML=origText;
+  }catch(e){toast('网络错误: '+e.message,false);btn.disabled=false;btn.innerHTML=origText}
 };
 
 // ═══════════════════════════════════════════════

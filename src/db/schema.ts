@@ -3,12 +3,13 @@ import type Database from 'better-sqlite3';
 export function initSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS agents (
-      agent_id   TEXT PRIMARY KEY,
-      name       TEXT NOT NULL,
+      agent_id     TEXT PRIMARY KEY,
+      name         TEXT NOT NULL,
       capabilities TEXT NOT NULL DEFAULT '[]',
-      status     TEXT NOT NULL DEFAULT 'IDLE'
-                 CHECK (status IN ('IDLE', 'BUSY', 'OFFLINE', 'OOM')),
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      relationship TEXT NOT NULL DEFAULT '',
+      status       TEXT NOT NULL DEFAULT 'IDLE'
+                   CHECK (status IN ('IDLE', 'BUSY', 'OFFLINE', 'OOM')),
+      created_at   TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS jobs (
@@ -41,4 +42,10 @@ export function initSchema(db: Database.Database): void {
       value TEXT NOT NULL
     );
   `);
+
+  // Migration: add relationship column to existing agents table
+  const cols = db.prepare("PRAGMA table_info(agents)").all() as Array<{ name: string }>;
+  if (!cols.some(c => c.name === 'relationship')) {
+    db.exec(`ALTER TABLE agents ADD COLUMN relationship TEXT NOT NULL DEFAULT ''`);
+  }
 }

@@ -74,10 +74,22 @@ agentCmd
       .map(s => s.trim())
       .filter(Boolean);
 
+    const relInput = await p.text({
+      message: 'Relationship with you (optional):',
+      placeholder: 'e.g. direct report / intern / contractor',
+      defaultValue: '',
+    });
+
+    if (p.isCancel(relInput)) {
+      p.cancel('Cancelled.');
+      process.exit(0);
+    }
+
     const agent = createAgent({
       agent_id: generateId('emp'),
       name: name as string,
       capabilities,
+      relationship: (relInput as string) || '',
       status: 'IDLE',
     });
 

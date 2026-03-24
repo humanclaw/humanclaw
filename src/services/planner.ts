@@ -39,7 +39,8 @@ function buildUserPrompt(prompt: string, agents: AgentWithMetrics[]): string {
     const speed = a.avg_delivery_hours !== null
       ? `平均交付时间 ${a.avg_delivery_hours}h`
       : '暂无历史数据';
-    return `- ${a.name} (ID: ${a.agent_id})  技能: [${a.capabilities.join(', ')}]  ${load}  ${speed}`;
+    const rel = a.relationship ? `  关系: ${a.relationship}` : '';
+    return `- ${a.name} (ID: ${a.agent_id})  技能: [${a.capabilities.join(', ')}]${rel}  ${load}  ${speed}`;
   }).join('\n');
 
   return `当前时间: ${now.toISOString()}

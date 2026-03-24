@@ -25,7 +25,7 @@ router.get('/status', (_req, res) => {
 
 // POST /api/v1/nodes - Register a new agent
 router.post('/', (req, res) => {
-  const { name, capabilities, status } = req.body;
+  const { name, capabilities, relationship, status } = req.body;
 
   if (!name || !Array.isArray(capabilities)) {
     res.status(400).json({ error: 'name and capabilities[] are required' });
@@ -36,6 +36,7 @@ router.post('/', (req, res) => {
     agent_id: generateId('emp'),
     name,
     capabilities,
+    relationship: relationship || '',
     status: (status as AgentStatus) ?? 'IDLE',
   });
 

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { resumeTask, rejectTask } from '../services/resume.js';
+import { simulateDelivery } from '../services/simulator.js';
 
 const router = Router();
 
@@ -45,6 +46,25 @@ router.post('/reject', (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     res.status(400).json({ error: message });
+  }
+});
+
+// POST /api/v1/tasks/simulate - AI simulate delivery from agent's perspective
+router.post('/simulate', async (req, res) => {
+  const { trace_id } = req.body;
+
+  if (!trace_id) {
+    res.status(400).json({ error: 'trace_id is required' });
+    return;
+  }
+
+  try {
+    const result = await simulateDelivery(trace_id);
+    res.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const status = message.includes('API Key') || message.includes('API key') ? 503 : 400;
+    res.status(status).json({ error: message });
   }
 });
 

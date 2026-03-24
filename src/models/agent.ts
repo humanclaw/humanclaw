@@ -22,13 +22,14 @@ export function createAgent(
   const now = new Date().toISOString();
   conn
     .prepare(
-      `INSERT INTO agents (agent_id, name, capabilities, status, created_at)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO agents (agent_id, name, capabilities, relationship, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
     )
     .run(
       agent.agent_id,
       agent.name,
       JSON.stringify(agent.capabilities),
+      agent.relationship || '',
       agent.status,
       now
     );

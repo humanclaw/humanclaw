@@ -10,6 +10,7 @@ export interface HumanAgent {
   agent_id: string;
   name: string;
   capabilities: string[];
+  relationship: string;
   status: AgentStatus;
   created_at: string;
 }
@@ -92,6 +93,7 @@ export interface AgentRow {
   agent_id: string;
   name: string;
   capabilities: string; // JSON-serialized string[]
+  relationship: string;
   status: AgentStatus;
   created_at: string;
 }
