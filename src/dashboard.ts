@@ -555,7 +555,7 @@ window.dispatchPlan=async function(){
     return {assignee_id:t.assignee_id,todo_description:t.todo_description,deadline:dl};
   });
   try{
-    const r=await fetch(API+'/jobs/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({original_prompt:p.original_prompt,openclaw_callback:'',tasks})});
+    const r=await fetch(API+'/jobs/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({original_prompt:p.original_prompt,tasks})});
     const d=await r.json();
     if(!r.ok){toast(d.error||'分发失败',false);return}
     toast('任务已分发！Job: '+d.job_id,true);
@@ -599,7 +599,7 @@ window.submitJob=async function(){
   }
   if(!tasks.length){toast('至少添加一个子任务',false);return}
   try{
-    const r=await fetch(API+'/jobs/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({original_prompt:prompt,openclaw_callback:'',tasks})});
+    const r=await fetch(API+'/jobs/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({original_prompt:prompt,tasks})});
     const d=await r.json();
     if(!r.ok){toast(d.error||'创建失败',false);return}
     toast('任务已创建并分发！Job: '+d.job_id,true);

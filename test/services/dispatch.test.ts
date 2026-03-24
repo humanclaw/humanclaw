@@ -27,7 +27,6 @@ describe('Dispatch Service', () => {
   it('should dispatch a job with tasks', () => {
     const job = dispatchJob({
       original_prompt: 'Build the app',
-      openclaw_callback: '',
       tasks: [
         {
           assignee_id: 'emp_001',
@@ -56,7 +55,6 @@ describe('Dispatch Service', () => {
     expect(() =>
       dispatchJob({
         original_prompt: 'Test',
-        openclaw_callback: '',
         tasks: [
           {
             assignee_id: 'non_existent',
@@ -74,7 +72,6 @@ describe('Dispatch Service', () => {
     expect(() =>
       dispatchJob({
         original_prompt: 'Test',
-        openclaw_callback: '',
         tasks: [
           {
             assignee_id: 'emp_off',
@@ -89,7 +86,6 @@ describe('Dispatch Service', () => {
   it('should generate unique trace IDs for each task', () => {
     const job = dispatchJob({
       original_prompt: 'Test',
-      openclaw_callback: '',
       tasks: [
         { assignee_id: 'emp_001', todo_description: 'A', deadline: '2030-01-01' },
         { assignee_id: 'emp_002', todo_description: 'B', deadline: '2030-01-01' },

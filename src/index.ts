@@ -231,7 +231,6 @@ program
         }));
         const job = dispatchJob({
           original_prompt: plan.original_prompt,
-          openclaw_callback: '',
           tasks,
         }, db);
         p.outro(`${chalk.green('已分发！')} Job: ${chalk.bold(job.job_id)}`);
@@ -250,7 +249,6 @@ program
         }));
         const job = dispatchJob({
           original_prompt: plan.original_prompt,
-          openclaw_callback: '',
           tasks,
         }, db);
         p.outro(`${chalk.green('已分发！')} Job: ${chalk.bold(job.job_id)}`);

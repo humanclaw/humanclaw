@@ -27,7 +27,6 @@ function seedAgentAndJob(db: Database.Database) {
     {
       job_id: 'job_001',
       original_prompt: 'Test job',
-      openclaw_callback: '',
       created_at: new Date().toISOString(),
     },
     db

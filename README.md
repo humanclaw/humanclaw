@@ -91,6 +91,7 @@ humanclaw agent list
 | `GET` | `/api/v1/jobs/active` | 获取看板数据 |
 | `POST` | `/api/v1/tasks/resume` | 提交交付物，触发恢复 |
 | `POST` | `/api/v1/tasks/reject` | 打回重做 |
+| `POST` | `/api/v1/tasks/simulate` | AI 模拟交付（角色扮演） |
 | `POST` | `/api/v1/jobs/:id/review` | AI 聚合审查交付质量 |
 | `GET` | `/api/v1/config` | 获取 LLM 配置 |
 | `PUT` | `/api/v1/config` | 更新 LLM 配置 |
@@ -119,14 +120,23 @@ curl -X POST http://localhost:2026/api/v1/tasks/resume \
 Web 看板包含三个核心视图：
 
 - **碳基算力池** — 实时查看碳基节点状态（🟢空闲 🟡忙碌 🔴离线 🟣崩溃），一键添加/删除节点
-- **碳基编排大盘** — AI 智能规划 + 任务 Kanban + 可交互任务卡片（点击直接提交交付/打回）+ AI 聚合审查
+- **碳基编排大盘** — AI 智能规划 + 任务 Kanban + 可交互任务卡片（点击直接提交交付/打回）+ 模拟交付 + AI 聚合审查
 - **I/O 交付终端** — 输入 trace_id 和交付载荷，触发系统恢复
 
 ### AI 功能
 
 - **智能规划** — 输入需求，AI 自动拆任务、匹配碳基节点、生成布置话术、设 DDL（可调）
+- **模拟交付** — 点击按钮，AI 以碳基节点视角角色扮演，根据身份、技能、关系生成模拟交付物
 - **聚合审查** — 全部交付后，AI 审查每个交付物质量（支持 GitHub PR/Commit/Issue URL），生成评分报告
 - **可配置 LLM** — 支持 Claude / OpenAI，可自定义 Base URL 接入私有模型服务（vLLM / Ollama / Azure）
+
+### Demo 场景
+
+Dashboard 内置三个开箱即用的 Demo 场景，一键加载即可体验：
+
+- **三国蜀汉** 🐉 — 你是刘备，底下有关羽、张飞、赵云、诸葛亮等七员大将
+- **互联网大厂** 💻 — 你是技术总监，管理前端、后端、算法、产品、设计、测试、运维团队
+- **美国政府** 🇺🇸 — 你是特朗普，指挥 Musk、Rubio、Bessent 等核心内阁
 
 ## 核心工作流
 
@@ -154,6 +164,7 @@ interface HumanAgent {
   agent_id: string;       // emp_xxxxxxxx
   name: string;           // "前端老李"
   capabilities: string[]; // ["UI/UX", "前端开发"]
+  relationship: string;   // "P7 直属下属，跟了三年"
   status: AgentStatus;    // IDLE | BUSY | OFFLINE | OOM
 }
 

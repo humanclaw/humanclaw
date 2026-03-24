@@ -24,7 +24,6 @@ describe('Resume Service', () => {
 
     const job = dispatchJob({
       original_prompt: 'Test job',
-      openclaw_callback: '',
       tasks: [
         { assignee_id: 'emp_001', todo_description: 'Do work', deadline: '2030-01-01' },
       ],
@@ -66,7 +65,6 @@ describe('Resume Service', () => {
 
     const job = dispatchJob({
       original_prompt: 'Multi-task job',
-      openclaw_callback: '',
       tasks: [
         { assignee_id: 'emp_001', todo_description: 'Task A', deadline: '2030-01-01' },
         { assignee_id: 'emp_002', todo_description: 'Task B', deadline: '2030-01-01' },

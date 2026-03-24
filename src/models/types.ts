@@ -31,7 +31,6 @@ export interface HumanTask {
 export interface OrchestrationJob {
   job_id: string;
   original_prompt: string;
-  openclaw_callback: string;
   created_at: string;
 }
 
@@ -39,7 +38,6 @@ export interface OrchestrationJob {
 
 export interface CreateJobRequest {
   original_prompt: string;
-  openclaw_callback: string;
   tasks: Array<{
     assignee_id: string;
     todo_description: string;
@@ -114,6 +112,5 @@ export interface TaskRow {
 export interface JobRow {
   job_id: string;
   original_prompt: string;
-  openclaw_callback: string;
   created_at: string;
 }

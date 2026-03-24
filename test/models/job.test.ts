@@ -32,7 +32,6 @@ describe('OrchestrationJob Model', () => {
       {
         job_id: 'job_001',
         original_prompt: 'Build the dashboard',
-        openclaw_callback: 'https://openclaw.example.com/callback',
         created_at: new Date().toISOString(),
       },
       db
@@ -47,7 +46,7 @@ describe('OrchestrationJob Model', () => {
 
   it('should get job with tasks', () => {
     createJob(
-      { job_id: 'job_001', original_prompt: 'Test', openclaw_callback: '', created_at: new Date().toISOString() },
+      { job_id: 'job_001', original_prompt: 'Test', created_at: new Date().toISOString() },
       db
     );
     createTask(
@@ -62,7 +61,7 @@ describe('OrchestrationJob Model', () => {
 
   it('should check job completion', () => {
     createJob(
-      { job_id: 'job_001', original_prompt: 'Test', openclaw_callback: '', created_at: new Date().toISOString() },
+      { job_id: 'job_001', original_prompt: 'Test', created_at: new Date().toISOString() },
       db
     );
     createTask(
@@ -79,7 +78,7 @@ describe('OrchestrationJob Model', () => {
 
   it('should list active jobs', () => {
     createJob(
-      { job_id: 'job_001', original_prompt: 'Test', openclaw_callback: '', created_at: new Date().toISOString() },
+      { job_id: 'job_001', original_prompt: 'Test', created_at: new Date().toISOString() },
       db
     );
     createTask(
@@ -93,7 +92,7 @@ describe('OrchestrationJob Model', () => {
 
   it('should delete a job', () => {
     createJob(
-      { job_id: 'job_001', original_prompt: 'Test', openclaw_callback: '', created_at: new Date().toISOString() },
+      { job_id: 'job_001', original_prompt: 'Test', created_at: new Date().toISOString() },
       db
     );
 

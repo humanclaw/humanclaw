@@ -10,10 +10,10 @@ export function createJob(
   const conn = db ?? getDb();
   conn
     .prepare(
-      `INSERT INTO jobs (job_id, original_prompt, openclaw_callback, created_at)
-       VALUES (?, ?, ?, ?)`
+      `INSERT INTO jobs (job_id, original_prompt, created_at)
+       VALUES (?, ?, ?)`
     )
-    .run(job.job_id, job.original_prompt, job.openclaw_callback, job.created_at);
+    .run(job.job_id, job.original_prompt, job.created_at);
   return job;
 }
 

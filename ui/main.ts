@@ -25,27 +25,32 @@ function renderLanding(container: HTMLElement): void {
       </p>
       <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:var(--font-mono);font-size:14px;color:var(--accent);overflow-x:auto;line-height:1.6;">npm install -g @humanclaw/humanclaw
 humanclaw serve
-# Dashboard: http://localhost:3000</pre>
+# Dashboard: http://localhost:2026</pre>
       <div style="margin-top:32px;">
         <h3 style="color:var(--text);margin-bottom:12px;">Architecture</h3>
         <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);line-height:1.5;">
   Master (Boss/PM)
+    |
+    |-- AI Planning --> Task Breakdown + Briefings + DDL
     |
     |-- Dispatch (trace_id) --> HumanAgent (Carbon CPU)
     |                              |
     |<-- Resume + Result ----------|
     |
     v
-  OpenClaw (Aggregate & Sync)</pre>
+  LLM Review (Claude / GPT)</pre>
       </div>
       <div style="margin-top:32px;">
         <h3 style="color:var(--text);margin-bottom:12px;">Features</h3>
         <ul style="color:var(--text-dim);line-height:2;padding-left:20px;">
-          <li>Carbon Compute Pool - Register humans as worker nodes with skill tags</li>
+          <li>Carbon Compute Pool - Register humans as worker nodes with skill tags and relationships</li>
+          <li>AI Task Planning - Natural language input, auto task breakdown, briefing generation</li>
           <li>Flat-layer Orchestration - No nested dependencies, avoid physical deadlock</li>
           <li>Suspend & Resume - Persist context during long async human execution</li>
+          <li>Simulate Delivery - AI role-plays as worker to generate mock deliverables</li>
+          <li>AI Aggregated Review - LLM reviews deliverable quality with scoring report</li>
+          <li>Demo Scenarios - Built-in demos (Three Kingdoms, Tech Company, US Government)</li>
           <li>Kanban Dashboard - Track DISPATCHED / OVERDUE / RESOLVED per job</li>
-          <li>OpenClaw Integration - Aggregate and sync results upstream</li>
         </ul>
       </div>
       <div style="margin-top:32px;display:flex;gap:12px;">

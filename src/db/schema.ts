@@ -15,7 +15,6 @@ export function initSchema(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS jobs (
       job_id           TEXT PRIMARY KEY,
       original_prompt  TEXT NOT NULL,
-      openclaw_callback TEXT NOT NULL DEFAULT '',
       created_at       TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

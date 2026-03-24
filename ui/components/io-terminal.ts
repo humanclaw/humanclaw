@@ -63,7 +63,7 @@ async function handleSubmit(): Promise<void> {
     }
 
     const msg = data.job_complete
-      ? `Task resolved! Job complete - ready for OpenClaw sync.`
+      ? `Task resolved! Job complete - ready for AI review.`
       : `Task ${traceId} resolved successfully.`;
 
     showToast(msg, 'success');

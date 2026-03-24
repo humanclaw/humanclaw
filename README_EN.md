@@ -91,6 +91,7 @@ humanclaw agent list
 | `GET` | `/api/v1/jobs/active` | Get kanban data |
 | `POST` | `/api/v1/tasks/resume` | Submit deliverable, trigger resume |
 | `POST` | `/api/v1/tasks/reject` | Reject and retry |
+| `POST` | `/api/v1/tasks/simulate` | AI simulate delivery (role-play) |
 | `POST` | `/api/v1/jobs/:id/review` | AI aggregated review of deliverables |
 | `GET` | `/api/v1/config` | Get LLM configuration |
 | `PUT` | `/api/v1/config` | Update LLM configuration |
@@ -119,14 +120,23 @@ curl -X POST http://localhost:2026/api/v1/tasks/resume \
 The web dashboard includes three core views:
 
 - **Carbon Compute Pool** — Real-time carbon-based node status (🟢Idle 🟡Busy 🔴Offline 🟣OOM), add/remove nodes
-- **Carbon Orchestration Pipeline** — AI planning + Task Kanban + interactive task cards (click to submit/reject) + AI review
+- **Carbon Orchestration Pipeline** — AI planning + Task Kanban + interactive task cards (click to submit/reject) + simulate delivery + AI review
 - **I/O Resolution Terminal** — Input trace_id and payload to trigger system resume
 
 ### AI Features
 
 - **Smart Planning** — Input requirements, AI auto-breaks tasks, matches nodes, generates briefings, sets adjustable deadlines
+- **Simulate Delivery** — Click a button, AI role-plays as the worker node based on their identity, skills, and relationship to generate mock deliverables
 - **Aggregated Review** — After all deliveries, AI reviews each deliverable (supports GitHub PR/Commit/Issue URLs), generates quality report
 - **Configurable LLM** — Supports Claude / OpenAI, custom Base URL for private deployments (vLLM / Ollama / Azure)
+
+### Demo Scenarios
+
+The dashboard includes three built-in demo scenarios for instant hands-on experience:
+
+- **Three Kingdoms (Shu Han)** 🐉 — You are Liu Bei, commanding Guan Yu, Zhang Fei, Zhao Yun, Zhuge Liang and more
+- **Tech Company** 💻 — You are the Tech Director, managing frontend, backend, algorithm, product, design, QA, and ops teams
+- **US Government** 🇺🇸 — You are Trump, directing Musk, Rubio, Bessent and the core cabinet
 
 ## Core Workflow
 
@@ -154,6 +164,7 @@ interface HumanAgent {
   agent_id: string;       // emp_xxxxxxxx
   name: string;           // "Frontend Dev Li"
   capabilities: string[]; // ["UI/UX", "Frontend"]
+  relationship: string;   // "P7 direct report, 3 years"
   status: AgentStatus;    // IDLE | BUSY | OFFLINE | OOM
 }
 

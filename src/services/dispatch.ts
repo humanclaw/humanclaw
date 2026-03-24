@@ -30,7 +30,6 @@ export function dispatchJob(
     {
       job_id: jobId,
       original_prompt: request.original_prompt,
-      openclaw_callback: request.openclaw_callback,
       created_at: now,
     },
     conn
