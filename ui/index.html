@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HumanClaw - Carbon-Based Node Orchestration</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>
+    <h1>HumanClaw</h1>
+    <p class="subtitle">Carbon-Based Node Orchestration Framework</p>
+  </header>
+
+  <nav>
+    <button class="tab active" data-panel="fleet">Carbon Compute Pool</button>
+    <button class="tab" data-panel="pipeline">Task Pipeline</button>
+    <button class="tab" data-panel="terminal">I/O Terminal</button>
+  </nav>
+
+  <main>
+    <section id="fleet" class="panel active"></section>
+    <section id="pipeline" class="panel"></section>
+    <section id="terminal" class="panel"></section>
+  </main>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

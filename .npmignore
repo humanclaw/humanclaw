@@ -1,0 +1,13 @@
+node_modules/
+src/
+test/
+ui/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+tsconfig.json
+tsup.config.ts
+vite.config.ts
+vitest.config.ts
+.github/
