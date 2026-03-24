@@ -262,10 +262,11 @@ window.loadDemo=async function(key){
     card.appendChild(ld);
   }
   let ok=0;
+  const demoAgentIds=[];
   for(const a of demo.agents){
     try{
       const r=await fetch(API+'/nodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,capabilities:a.capabilities,relationship:a.relationship})});
-      if(r.ok)ok++;
+      if(r.ok){ok++;const d=await r.json();demoAgentIds.push(d.agent_id);}
     }catch{}
   }
   toast(demo.title+' 场景已加载！'+ok+'/'+demo.agents.length+' 个节点注册成功',true);
@@ -281,7 +282,7 @@ window.loadDemo=async function(key){
     document.getElementById('pipeline').classList.add('active');
     load('pipeline');
     // Wait for pipeline to render, then open create job with demo prompt
-    setTimeout(()=>showCreateJob(demo.prompt),300);
+    setTimeout(()=>showCreateJob(demo.prompt,demoAgentIds),300);
   },200);
 };
 
@@ -429,12 +430,16 @@ async function loadPipeline(el){
 
 // ─── AI Planning Flow ────────────────────────
 let pendingDemoPrompt='';
-window.showCreateJob=function(demoPrompt){
+window.showCreateJob=function(demoPrompt,demoAgentIds){
   if(!cachedAgents.length){toast('请先在「碳基算力池」中添加至少一个碳基节点',false);return}
   pendingDemoPrompt=demoPrompt||'';
   currentPlan=null;
-  // Pre-select all IDLE agents
-  selectedAgentIds=new Set(cachedAgents.filter(a=>a.status==='IDLE').map(a=>a.agent_id));
+  // Pre-select: demo agents if provided, otherwise all IDLE agents
+  if(demoAgentIds&&demoAgentIds.length){
+    selectedAgentIds=new Set(demoAgentIds);
+  }else{
+    selectedAgentIds=new Set(cachedAgents.filter(a=>a.status==='IDLE').map(a=>a.agent_id));
+  }
   const ov=document.createElement('div');ov.className='overlay';ov.id='overlay';
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
   renderPlanStep1(ov);
