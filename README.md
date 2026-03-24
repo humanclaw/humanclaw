@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.jpg" alt="HumanClaw Logo" width="120" />
+
 # HumanClaw
 
 **碳基节点编排框架 —— 将人类抽象为分布式 Worker 节点**

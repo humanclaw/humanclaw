@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.jpg" alt="HumanClaw Logo" width="120" />
+
 # HumanClaw
 
 **Carbon-Based Node Orchestration Framework — Humans as Distributed Worker Nodes**

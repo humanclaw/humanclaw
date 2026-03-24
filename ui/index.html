@@ -3,19 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HumanClaw - Carbon-Based Node Orchestration</title>
+  <title>HumanClaw - 碳基节点编排框架</title>
+  <link rel="icon" href="./assets/logo.jpg" type="image/jpeg" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header>
-    <h1>HumanClaw</h1>
-    <p class="subtitle">Carbon-Based Node Orchestration Framework</p>
+    <div class="header-row">
+      <div class="header-left">
+        <img src="./assets/logo.jpg" alt="HumanClaw Logo" class="header-logo" />
+        <div>
+          <h1>HumanClaw</h1>
+          <p class="subtitle" id="subtitle">碳基节点编排框架 — 将人类抽象为分布式 Worker 节点</p>
+        </div>
+      </div>
+      <button class="lang-toggle" id="lang-toggle" title="Switch Language">EN</button>
+    </div>
   </header>
 
   <nav>
-    <button class="tab active" data-panel="fleet">Carbon Compute Pool</button>
-    <button class="tab" data-panel="pipeline">Task Pipeline</button>
-    <button class="tab" data-panel="terminal">I/O Terminal</button>
+    <button class="tab active" data-panel="fleet" id="tab-fleet">碳基算力池</button>
+    <button class="tab" data-panel="pipeline" id="tab-pipeline">任务编排</button>
+    <button class="tab" data-panel="terminal" id="tab-terminal">I/O 终端</button>
   </nav>
 
   <main>
