@@ -97,6 +97,18 @@ main{padding:24px 32px;max-width:1200px}
 .detail-label{font-size:11px;color:var(--text-dim);margin-bottom:3px;font-weight:500}
 .detail-value{font-size:13px}
 .result-display{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:12px;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+/* Demo cards */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
+.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.demo-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.08)}
+.demo-card-emoji{font-size:36px;margin-bottom:10px}
+.demo-card-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.demo-card-role{font-size:12px;color:var(--accent);margin-bottom:8px;font-family:var(--font-mono)}
+.demo-card-desc{font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:10px}
+.demo-card-agents{display:flex;flex-wrap:wrap;gap:4px}
+.demo-card-agents span{background:var(--accent-dim);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);border-radius:4px;padding:1px 6px;font-size:10px;color:var(--accent)}
+.demo-card-prompt{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);font-style:italic}
+.demo-loading{position:absolute;inset:0;background:rgba(15,17,23,.85);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:2}
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;animation:slide-up .25s ease;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .toast.ok{background:var(--green);color:#fff}.toast.err{background:var(--red);color:#fff}
@@ -174,6 +186,124 @@ let currentPlan=null;
 let selectedAgentIds=new Set();
 
 // ═══════════════════════════════════════════════
+// DEMO SCENARIOS
+// ═══════════════════════════════════════════════
+const DEMOS={
+  sanguo:{
+    emoji:'&#128009;',title:'三国蜀汉',role:'你是刘备',
+    desc:'桃园结义，三顾茅庐。作为蜀汉之主，统领五虎上将和卧龙凤雏，逐鹿中原。',
+    prompt:'北伐中原，兵分三路，需要攻城、断粮和外交三管齐下',
+    agents:[
+      {name:'关羽',capabilities:['武艺','统兵','镇守要地','水军指挥'],relationship:'义弟，桃园结义二弟，最信任的兄弟和大将'},
+      {name:'张飞',capabilities:['武艺','先锋突击','骑兵指挥','威慑敌军'],relationship:'义弟，桃园结义三弟，性如烈火但忠心耿耿'},
+      {name:'赵云',capabilities:['武艺','护卫','骑兵突击','侦察敏捷'],relationship:'四弟级别的心腹爱将，长坂坡救阿斗'},
+      {name:'诸葛亮',capabilities:['战略规划','内政治理','外交','发明创造','阵法'],relationship:'三顾茅庐请来的军师，如鱼得水的关系'},
+      {name:'庞统',capabilities:['战略规划','奇谋','攻城战术','地形分析'],relationship:'凤雏，与诸葛亮齐名的军师，副军师中郎将'},
+      {name:'黄忠',capabilities:['武艺','弓箭','老当益壮','攻城战'],relationship:'老将军，定军山斩夏侯渊，五虎上将之一'},
+      {name:'马超',capabilities:['武艺','骑兵','西凉作战','威慑羌族'],relationship:'归降的西凉猛将，五虎上将之一'}
+    ]
+  },
+  tech:{
+    emoji:'&#128187;',title:'互联网大厂',role:'你是技术总监',
+    desc:'带领一支全栈团队，从前端到运维一应俱全。应对高并发、搞 AI、上线新系统。',
+    prompt:'上线一个 AI 智能客服系统，包括前端界面、后端 API、推荐算法、压力测试和灰度发布方案',
+    agents:[
+      {name:'前端老李',capabilities:['React','TypeScript','Next.js','移动端适配','性能优化'],relationship:'P7 前端 TL，跟了你三年，技术过硬但最近有点倦怠'},
+      {name:'后端大王',capabilities:['Java','Go','微服务','数据库设计','高并发架构'],relationship:'P8 后端架构师，技术大拿，说话直来直去'},
+      {name:'算法小陈',capabilities:['机器学习','推荐系统','NLP','Python','数据分析'],relationship:'P6 算法工程师，刚从学校毕业一年，潜力很大但经验不足'},
+      {name:'产品经理 Amy',capabilities:['需求分析','用户调研','PRD撰写','项目管理','数据驱动'],relationship:'P7 产品经理，业务感觉很好，跨部门沟通能力强'},
+      {name:'设计师小林',capabilities:['UI设计','交互设计','Figma','设计系统','用户体验'],relationship:'P6 资深设计师，审美在线，偶尔和产品经理吵架'},
+      {name:'测试负责人老赵',capabilities:['自动化测试','性能测试','安全测试','测试用例设计','CI集成'],relationship:'P7 测试负责人，入职五年老员工，对质量要求极高'},
+      {name:'运维 DevOps 阿杰',capabilities:['Kubernetes','Docker','CI/CD','监控告警','云原生架构'],relationship:'P7 SRE，半夜被 oncall 叫起来过无数次，求稳派'}
+    ]
+  },
+  gov:{
+    emoji:'&#127482;&#127480;',title:'美国政府',role:'你是特朗普 (POTUS)',
+    desc:'Make the executive branch great again! 管理你的核心内阁成员，推行政策议程。',
+    prompt:'制定一个让美国制造业回流的综合计划，需要关税政策、减税方案、能源保障、边境安全配合和政府效率优化',
+    agents:[
+      {name:'Elon Musk',capabilities:['政府效率','成本削减','科技创新','SpaceX','Tesla','社交媒体'],relationship:'DOGE 负责人，世界首富，Twitter/X 老板，最具影响力的盟友'},
+      {name:'Marco Rubio',capabilities:['外交政策','拉美事务','国际谈判','制裁政策','国家安全'],relationship:'国务卿，佛罗里达参议员，曾经的竞选对手变忠实支持者'},
+      {name:'Pete Hegseth',capabilities:['国防战略','军事改革','退伍军人事务','军费预算','作战指挥'],relationship:'国防部长，前 Fox News 主持人，坚定的 MAGA 支持者'},
+      {name:'Scott Bessent',capabilities:['经济政策','金融市场','税收改革','债务管理','贸易政策'],relationship:'财政部长，华尔街老将，关键经济顾问'},
+      {name:'Kristi Noem',capabilities:['国土安全','边境管控','移民执法','反恐','网络安全'],relationship:'国土安全部长，前南达科他州长，边境强硬派'},
+      {name:'Tulsi Gabbard',capabilities:['国家情报','情报分析','反间谍','网络战','安全评估'],relationship:'国家情报总监，前民主党国会议员，转投共和党的盟友'},
+      {name:'Robert F. Kennedy Jr.',capabilities:['公共卫生','疫苗政策','食品安全','药品监管','医疗改革'],relationship:'卫生与公众服务部长，反建制派，疫苗怀疑论者'}
+    ]
+  }
+};
+
+function renderDemoCards(){
+  let h='<div style="margin-top:24px"><div style="font-size:14px;font-weight:600;margin-bottom:4px">&#127918; 快速体验 Demo</div><div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">选择一个场景，一键加载碳基节点，立即开始编排</div></div>';
+  h+='<div class="demo-grid">';
+  for(const[key,d]of Object.entries(DEMOS)){
+    h+='<div class="demo-card" id="demo-card-'+key+'" onclick="loadDemo(\\''+key+'\\')">';
+    h+='<div class="demo-card-emoji">'+d.emoji+'</div>';
+    h+='<div class="demo-card-title">'+d.title+'</div>';
+    h+='<div class="demo-card-role">'+d.role+'</div>';
+    h+='<div class="demo-card-desc">'+esc(d.desc)+'</div>';
+    h+='<div class="demo-card-agents">';
+    for(const a of d.agents)h+='<span>'+esc(a.name)+'</span>';
+    h+='</div>';
+    h+='<div class="demo-card-prompt">&#128161; &quot;'+esc(d.prompt)+'&quot;</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+window.loadDemo=async function(key){
+  const demo=DEMOS[key];
+  if(!demo)return;
+  const card=document.getElementById('demo-card-'+key);
+  if(card){
+    const ld=document.createElement('div');ld.className='demo-loading';
+    ld.innerHTML='<div class="spinner"></div><div style="font-size:12px;color:var(--text-dim)">加载 '+demo.title+' 场景中...</div>';
+    card.appendChild(ld);
+  }
+  let ok=0;
+  for(const a of demo.agents){
+    try{
+      const r=await fetch(API+'/nodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,capabilities:a.capabilities,relationship:a.relationship})});
+      if(r.ok)ok++;
+    }catch{}
+  }
+  toast(demo.title+' 场景已加载！'+ok+'/'+demo.agents.length+' 个节点注册成功',true);
+  // Switch to pipeline and open AI planning with suggested prompt
+  load('fleet');
+  setTimeout(()=>{
+    // Switch tab to pipeline
+    const tabs=document.querySelectorAll('.tab');
+    const panels=document.querySelectorAll('.panel');
+    tabs.forEach(x=>x.classList.remove('active'));
+    panels.forEach(x=>x.classList.remove('active'));
+    tabs[1].classList.add('active');
+    document.getElementById('pipeline').classList.add('active');
+    load('pipeline');
+    // Wait for pipeline to render, then open create job with demo prompt
+    setTimeout(()=>showCreateJob(demo.prompt),300);
+  },200);
+};
+
+window.showDemoSelector=function(){
+  const ov=document.createElement('div');ov.className='overlay';ov.id='overlay';
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  let h='<div class="form-card"><h3>&#127918; 选择 Demo 场景</h3>';
+  h+='<div style="font-size:12px;color:var(--text-dim);margin-bottom:16px">一键加载碳基节点，立即开始编排体验</div>';
+  for(const[key,d]of Object.entries(DEMOS)){
+    h+='<div class="demo-card" id="demo-card-'+key+'" onclick="document.getElementById(\\'overlay\\').remove();loadDemo(\\''+key+'\\')" style="margin-bottom:10px">';
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:28px">'+d.emoji+'</span><div><div class="demo-card-title">'+d.title+'</div><div class="demo-card-role">'+d.role+'</div></div></div>';
+    h+='<div class="demo-card-desc">'+esc(d.desc)+'</div>';
+    h+='<div class="demo-card-agents">';
+    for(const a of d.agents)h+='<span>'+esc(a.name)+'</span>';
+    h+='</div></div>';
+  }
+  h+='<div class="btn-group"><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div></div>';
+  ov.innerHTML=h;
+  document.body.appendChild(ov);
+};
+
+// ═══════════════════════════════════════════════
 // FLEET
 // ═══════════════════════════════════════════════
 async function loadFleet(el){
@@ -182,7 +312,7 @@ async function loadFleet(el){
     const r=await fetch(API+'/nodes/status');
     const d=await r.json();
     cachedAgents=d.agents||[];
-    let h='<div class="section-hd"><h2>碳基算力池</h2><button class="btn btn-primary btn-sm" onclick="showAddAgent()">+ 添加节点</button></div>';
+    let h='<div class="section-hd"><h2>碳基算力池</h2><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="showDemoSelector()">&#127918; Demo</button><button class="btn btn-primary btn-sm" onclick="showAddAgent()">+ 添加节点</button></div></div>';
     h+='<div class="stats">';
     h+='<div class="stat"><div class="stat-val">'+d.total+'</div><div class="stat-lbl">总计</div></div>';
     h+='<div class="stat"><div class="stat-val" style="color:var(--green)">'+d.idle+'</div><div class="stat-lbl">空闲</div></div>';
@@ -191,7 +321,8 @@ async function loadFleet(el){
     h+='<div class="stat"><div class="stat-val" style="color:var(--purple)">'+d.oom+'</div><div class="stat-lbl">崩溃</div></div>';
     h+='</div>';
     if(!d.agents.length){
-      h+='<div class="empty-state" style="margin-top:32px"><div class="icon">👤</div><p>还没有碳基节点。点击上方「+ 添加节点」注册你的第一个碳基算力单元。</p></div>';
+      h+='<div class="empty-state" style="margin-top:32px"><div class="icon">&#128100;</div><p>还没有碳基节点。点击上方「+ 添加节点」手动注册，或选择一个 Demo 场景快速体验。</p></div>';
+      h+=renderDemoCards();
       el.innerHTML=h;return;
     }
     h+='<div class="grid">';
@@ -297,8 +428,10 @@ async function loadPipeline(el){
 }
 
 // ─── AI Planning Flow ────────────────────────
-window.showCreateJob=function(){
+let pendingDemoPrompt='';
+window.showCreateJob=function(demoPrompt){
   if(!cachedAgents.length){toast('请先在「碳基算力池」中添加至少一个碳基节点',false);return}
+  pendingDemoPrompt=demoPrompt||'';
   currentPlan=null;
   // Pre-select all IDLE agents
   selectedAgentIds=new Set(cachedAgents.filter(a=>a.status==='IDLE').map(a=>a.agent_id));
@@ -341,7 +474,7 @@ function renderPlanStep1(ov){
   };
 
   ov.innerHTML='<div class="form-card"><h3>AI 智能规划</h3>'
-    +'<div class="fg"><label>输入你的需求</label><textarea id="plan-prompt" rows="3" placeholder="例: 完成首页重构，包括导航栏、内容区和页脚的响应式改版" style="font-family:var(--font-sans);font-size:13px"></textarea></div>'
+    +'<div class="fg"><label>输入你的需求</label><textarea id="plan-prompt" rows="3" placeholder="例: 完成首页重构，包括导航栏、内容区和页脚的响应式改版" style="font-family:var(--font-sans);font-size:13px">'+esc(pendingDemoPrompt)+'</textarea></div>'
     +'<div class="fg"><label>选择参与的碳基节点 <span style="color:var(--text-dim);font-weight:400">(默认选中空闲节点)</span></label>'
     +'<div id="agent-chip-area">'+renderChips('all')+'</div></div>'
     +'<div class="btn-group">'
