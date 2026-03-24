@@ -1,0 +1,70 @@
+{
+  "name": "@humanclaw/humanclaw",
+  "version": "1.1.5",
+  "description": "Carbon-based node orchestration framework - treating humans as distributed worker nodes",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/humanclaw/humanclaw.git"
+  },
+  "homepage": "https://humanclaw.github.io/humanclaw/",
+  "bugs": {
+    "url": "https://github.com/humanclaw/humanclaw/issues"
+  },
+  "keywords": [
+    "orchestration",
+    "task-management",
+    "distributed",
+    "human-in-the-loop",
+    "async",
+    "workflow"
+  ],
+  "bin": {
+    "humanclaw": "dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "README_EN.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts serve",
+    "dev:ui": "vite ui",
+    "build": "tsup && vite build",
+    "build:server": "tsup",
+    "build:ui": "vite build",
+    "prepublishOnly": "npm run build:server",
+    "start": "node dist/index.js serve",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "better-sqlite3": "^11.7.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "nanoid": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.3",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vitest": "^3.1.2"
+  }
+}
