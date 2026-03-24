@@ -109,7 +109,7 @@ function renderLanding(container: HTMLElement): void {
   container.innerHTML = `
     <div style="max-width:720px;margin:0 auto;padding:40px 0;">
       <div style="text-align:center;margin-bottom:24px;">
-        <img src="./assets/logo.jpg" alt="HumanClaw Logo" style="width:100px;height:100px;border-radius:16px;" />
+        <img src="./logo.jpg" alt="HumanClaw Logo" style="width:100px;height:100px;border-radius:16px;" />
       </div>
       <h2 style="color:var(--accent);font-family:var(--font-mono);margin-bottom:16px;text-align:center;">&gt; HumanClaw</h2>
       <p style="color:var(--text);line-height:1.8;margin-bottom:24px;">
