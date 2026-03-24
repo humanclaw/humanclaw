@@ -90,7 +90,7 @@ humanclaw agent list
 | `PATCH` | `/api/v1/nodes/:id/status` | Update node status |
 | `POST` | `/api/v1/jobs/plan` | AI task planning (does not dispatch) |
 | `POST` | `/api/v1/jobs/create` | Create and dispatch job |
-| `GET` | `/api/v1/jobs/active` | Get kanban data |
+| `GET` | `/api/v1/jobs/active` | Get active jobs data |
 | `POST` | `/api/v1/tasks/resume` | Submit deliverable, trigger resume |
 | `POST` | `/api/v1/tasks/reject` | Reject and retry |
 | `POST` | `/api/v1/tasks/simulate` | AI simulate delivery (role-play) |
@@ -122,7 +122,7 @@ curl -X POST http://localhost:2026/api/v1/tasks/resume \
 The web dashboard includes three core views:
 
 - **Carbon Compute Pool** — Real-time carbon-based node status (🟢Idle 🟡Busy 🔴Offline 🟣OOM), add/remove nodes
-- **Carbon Orchestration Pipeline** — AI planning + Task Kanban + interactive task cards (click to submit/reject) + simulate delivery + AI review
+- **Carbon Orchestration Pipeline** — AI planning + task board + interactive task cards (click to submit/reject) + simulate delivery + AI review
 - **I/O Resolution Terminal** — Input trace_id and payload to trigger system resume
 
 ### AI Features
