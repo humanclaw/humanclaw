@@ -1,71 +1,173 @@
-import { fetchFleet, renderFleet } from './components/fleet-status';
-import { fetchActiveJobs, renderPipeline } from './components/task-pipeline';
-import { renderTerminal } from './components/io-terminal';
-
 // ─── i18n ────────────────────────────────────────────────────
 
 type Lang = 'zh' | 'en';
 
 const i18n: Record<Lang, Record<string, string>> = {
   zh: {
-    title: 'HumanClaw',
-    subtitle: '碳基节点编排框架 — 将人类抽象为分布式 Worker 节点',
-    pageTitle: 'HumanClaw - 碳基节点编排框架',
-    tabFleet: '碳基算力池',
-    tabPipeline: '任务编排',
-    tabTerminal: 'I/O 终端',
-    langToggle: 'EN',
-    landingDesc: '在 AI 时代，最需要被编排的不是容器，不是微服务，而是人。HumanClaw 将人类抽象为分布式 Worker 节点，用 AI 自动拆解需求、匹配人选、生成话术、审查交付。一句话需求进去，一键分发出来。安装即用：',
+    // nav
+    navArch: '架构',
+    navFeat: '特性',
+    navWorkflow: '工作流',
+    navDemo: '场景',
+    navStart: '快速上手',
+    // hero
+    heroSubtitle: '碳基节点编排框架 — 将人类抽象为分布式 Worker 节点',
+    heroSlogan: '在 AI 时代，最需要被编排的不是容器，不是微服务，而是人。',
+    copy: '复制',
+    copied: '已复制!',
+    // architecture
     archTitle: '核心架构',
-    archMaster: '主节点 (老板/PM)',
-    archPlanning: 'AI 规划 --> 任务拆解 + 话术生成 + DDL',
-    archDispatch: '分发 (trace_id) --> 碳基节点 (碳基算力)',
-    archResume: '<-- 恢复 + 交付结果',
-    archReview: 'LLM 审查 (Claude / GPT)',
-    featTitle: '核心功能',
-    feat1: '碳基算力池 — 将人类注册为带技能标签和关系描述的 Worker 节点',
-    feat2: 'AI 智能规划 — 自然语言输入需求，自动拆解任务、匹配节点、生成布置话术',
-    feat3: '扁平编排 — 无嵌套依赖，避免碳基死锁',
-    feat4: '挂起与恢复 — 碳基节点异步执行期间持久化上下文',
-    feat5: '模拟交付 — AI 角色扮演碳基节点，生成模拟交付物',
-    feat6: 'AI 聚合审查 — LLM 审查交付质量，生成评分报告',
-    feat7: 'Demo 场景 — 内置三国蜀汉、互联网大厂、美国政府三大场景',
-    feat8: '看板面板 — 实时跟踪已分发 / 已逾期 / 已交付状态',
-    demoTitle: 'Demo 场景',
-    demoDesc: '内置三个开箱即用的场景，一键加载即可体验：',
-    demo1: '三国蜀汉 — 你是刘备，底下有关羽、张飞、赵云、诸葛亮等七员大将',
-    demo2: '互联网大厂 — 你是技术总监，管理前端、后端、算法、产品、设计、测试、运维团队',
-    demo3: '美国政府 — 你是特朗普，指挥 Musk、Rubio、Bessent 等核心内阁',
+    archDesc: '将人类抽象为碳基 Worker 节点，任务派发为进程挂起，交付结果为进程恢复。',
+    archMaster: 'Master 节点',
+    archMasterHint: '老板 / PM',
+    archPlanning: 'AI 规划',
+    archPlanningHint: '拆任务 + 话术 + DDL',
+    archDispatch: '分发 Dispatch',
+    archWorker: 'HumanAgent',
+    archWorkerHint: '碳基算力',
+    archReturn: '← Resume + Result → AI 审查 + 绩效评价',
+    conceptSuspend: '挂起 & 恢复',
+    conceptSuspendDesc: '任务分发后进程挂起，碳基节点异步执行，提交交付物后自动恢复。',
+    conceptTeam: '团队上下文',
+    conceptTeamDesc: '碳基节点按团队组织，每个成员有独立的团队关系描述，注入 AI 规划。',
+    conceptEval: '审查 & 绩效',
+    conceptEvalDesc: 'LLM 审查交付质量，支持三种评分体系（Ali 3.75 / SABCD / EM+MM-）。',
+    // features
+    featTitle: '功能特性',
+    feat1Title: 'AI 智能规划',
+    feat1Desc: '自然语言输入需求，AI 自动拆解任务、匹配碳基节点、生成布置话术。',
+    feat2Title: '碳基算力池',
+    feat2Desc: '将人类注册为带技能标签、关系描述的 Worker 节点，实时追踪状态。',
+    feat3Title: '团队管理',
+    feat3Desc: '创建团队、管理成员，每人有独立团队关系，按团队维度规划任务。',
+    feat4Title: '绩效评价',
+    feat4Desc: '三种评分体系（Ali 3.75 / SABCD / EM+MM-），AI 生成按人按任务的绩效。',
+    feat5Title: '模拟交付',
+    feat5Desc: 'AI 角色扮演碳基节点，基于身份、技能和关系生成模拟交付物。',
+    feat6Title: 'AI 聚合审查',
+    feat6Desc: '全部交付后，LLM 审查每个交付物质量（支持 GitHub URL），生成报告。',
+    feat7Title: '3 种 LLM 格式',
+    feat7Desc: 'Anthropic Messages / OpenAI Chat / OpenAI Responses，自定义 Base URL。',
+    feat8Title: '可伸缩编辑器',
+    feat8Desc: '所有文本区域支持拖拽调整大小和全屏展开，舒适编辑长文本。',
+    feat9Title: '开箱即用 Demo',
+    feat9Desc: '内置三国蜀汉、互联网大厂、美国政府三大场景，一键体验。',
+    // workflow
+    wfTitle: '核心工作流',
+    wf1Title: '镜像封装',
+    wf1Desc: '录入碳基成员，建立团队，构建算力池',
+    wf2Title: 'AI 规划',
+    wf2Desc: '输入需求，AI 拆解任务、匹配节点、生成话术',
+    wf3Title: '确认分发',
+    wf3Desc: '预览规划结果，调整 DDL，一键分发',
+    wf4Title: '异步恢复',
+    wf4Desc: '碳基节点提交交付物，系统唤醒 Job',
+    wf5Title: 'AI 审查',
+    wf5Desc: 'LLM 审查交付质量，生成评分报告',
+    wf6Title: '绩效评价',
+    wf6Desc: '选择评分体系，AI 生成绩效评分',
+    // demo
+    demoTitle: '内置场景',
+    demoDesc: '三个开箱即用的 Demo 场景，一键加载碳基节点和团队：',
+    demo1Title: '三国蜀汉',
+    demo1Role: '你是刘备',
+    demo1Desc: '五虎上将团队 + 谋士团，含关羽、张飞、赵云、诸葛亮等',
+    demo2Title: '互联网大厂',
+    demo2Role: '你是技术总监',
+    demo2Desc: '前端组、后端组、产品组、质量组四个团队',
+    demo3Title: '美国政府',
+    demo3Role: '你是特朗普',
+    demo3Desc: '经济安全团队、国防外交团队、国内事务团队',
+    // quickstart
+    qsTitle: '快速上手',
+    qs1Label: '安装',
+    qs2Label: '启动服务',
+    qs3Label: '注册碳基节点',
+    qs3Comment: '# 交互式录入：节点名称、技能标签',
+    qs4Label: 'AI 规划任务',
+    qs4Cmd: '完成首页重构',
+    qs4Comment: '# AI 自动拆解任务、匹配节点、生成话术',
+    // footer
+    footerDocs: '文档',
   },
   en: {
-    title: 'HumanClaw',
-    subtitle: 'Carbon-Based Node Orchestration Framework — Humans as Distributed Worker Nodes',
-    pageTitle: 'HumanClaw - Carbon-Based Node Orchestration',
-    tabFleet: 'Carbon Compute Pool',
-    tabPipeline: 'Task Pipeline',
-    tabTerminal: 'I/O Terminal',
-    langToggle: '中文',
-    landingDesc: 'In the age of AI, the thing that most needs orchestrating is not containers or microservices — it is people. HumanClaw abstracts humans as distributed worker nodes, using AI to break down requirements, match people, generate briefings, and review deliverables. One sentence in, one-click dispatch out. Get started:',
+    navArch: 'Architecture',
+    navFeat: 'Features',
+    navWorkflow: 'Workflow',
+    navDemo: 'Demos',
+    navStart: 'Quick Start',
+    heroSubtitle: 'Carbon-Based Node Orchestration — Humans as Distributed Worker Nodes',
+    heroSlogan: 'In the age of AI, the thing that most needs orchestrating isn\'t containers or microservices — it\'s people.',
+    copy: 'Copy',
+    copied: 'Copied!',
     archTitle: 'Architecture',
-    archMaster: 'Master (Boss/PM)',
-    archPlanning: 'AI Planning --> Task Breakdown + Briefings + DDL',
-    archDispatch: 'Dispatch (trace_id) --> HumanAgent (Carbon CPU)',
-    archResume: '<-- Resume + Result',
-    archReview: 'LLM Review (Claude / GPT)',
+    archDesc: 'Abstracts humans as carbon-based worker nodes. Task dispatch = process suspend. Delivery = process resume.',
+    archMaster: 'Master Node',
+    archMasterHint: 'Boss / PM',
+    archPlanning: 'AI Planning',
+    archPlanningHint: 'Task breakdown + Briefings + DDL',
+    archDispatch: 'Dispatch',
+    archWorker: 'HumanAgent',
+    archWorkerHint: 'Carbon CPU',
+    archReturn: '← Resume + Result → AI Review + Perf Evaluation',
+    conceptSuspend: 'Suspend & Resume',
+    conceptSuspendDesc: 'After dispatch, the process suspends. Carbon nodes execute async. Deliverables trigger resume.',
+    conceptTeam: 'Team Context',
+    conceptTeamDesc: 'Nodes organized into teams. Each member has team-specific relationships injected into AI planning.',
+    conceptEval: 'Review & Evaluation',
+    conceptEvalDesc: 'LLM reviews deliverable quality. Three rating systems (Ali 3.75 / SABCD / EM+MM-).',
     featTitle: 'Features',
-    feat1: 'Carbon Compute Pool — Register humans as worker nodes with skill tags and relationships',
-    feat2: 'AI Task Planning — Natural language input, auto task breakdown, briefing generation',
-    feat3: 'Flat-layer Orchestration — No nested dependencies, avoid physical deadlock',
-    feat4: 'Suspend & Resume — Persist context during long async human execution',
-    feat5: 'Simulate Delivery — AI role-plays as worker to generate mock deliverables',
-    feat6: 'AI Aggregated Review — LLM reviews deliverable quality with scoring report',
-    feat7: 'Demo Scenarios — Built-in Three Kingdoms, Tech Company, US Government',
-    feat8: 'Task Board — Real-time tracking of dispatched, overdue, and resolved status',
-    demoTitle: 'Demo Scenarios',
-    demoDesc: 'Three built-in scenarios, one click to start:',
-    demo1: 'Three Kingdoms (Shu Han) — You are Liu Bei, commanding Guan Yu, Zhang Fei, Zhao Yun, Zhuge Liang and more',
-    demo2: 'Tech Company — You are the Tech Director, managing frontend, backend, algorithm, product, design, QA, and ops teams',
-    demo3: 'US Government — You are Trump, directing Musk, Rubio, Bessent and the core cabinet',
+    feat1Title: 'AI Smart Planning',
+    feat1Desc: 'Natural language input, AI auto-breaks tasks, matches nodes, generates briefings.',
+    feat2Title: 'Carbon Compute Pool',
+    feat2Desc: 'Register humans as worker nodes with skill tags and relationships, real-time status tracking.',
+    feat3Title: 'Team Management',
+    feat3Desc: 'Create teams, manage members with team-specific relationships, plan tasks by team.',
+    feat4Title: 'Performance Evaluation',
+    feat4Desc: 'Three rating systems (Ali 3.75 / SABCD / EM+MM-), AI generates per-person performance scores.',
+    feat5Title: 'Simulate Delivery',
+    feat5Desc: 'AI role-plays as a worker node based on identity, skills and relationships.',
+    feat6Title: 'AI Aggregated Review',
+    feat6Desc: 'After all deliveries, LLM reviews quality (supports GitHub URLs), generates report.',
+    feat7Title: '3 LLM Formats',
+    feat7Desc: 'Anthropic Messages / OpenAI Chat / OpenAI Responses, custom Base URL support.',
+    feat8Title: 'Resizable Editors',
+    feat8Desc: 'All text areas support drag-to-resize and fullscreen expansion.',
+    feat9Title: 'Built-in Demos',
+    feat9Desc: 'Three Kingdoms, Tech Company, US Government — one-click to experience.',
+    wfTitle: 'Core Workflow',
+    wf1Title: 'Encapsulate',
+    wf1Desc: 'Register members, build teams, construct compute pool',
+    wf2Title: 'AI Planning',
+    wf2Desc: 'Input requirements, AI breaks tasks, matches nodes, generates briefings',
+    wf3Title: 'Dispatch',
+    wf3Desc: 'Preview plan, adjust deadlines, one-click dispatch',
+    wf4Title: 'Async Resume',
+    wf4Desc: 'Carbon nodes submit deliverables, system wakes up Job',
+    wf5Title: 'AI Review',
+    wf5Desc: 'LLM reviews deliverable quality, generates scoring report',
+    wf6Title: 'Evaluation',
+    wf6Desc: 'Select rating system, AI generates performance scores',
+    demoTitle: 'Built-in Scenarios',
+    demoDesc: 'Three ready-to-use demo scenarios, one-click to load nodes and teams:',
+    demo1Title: 'Three Kingdoms',
+    demo1Role: 'You are Liu Bei',
+    demo1Desc: 'Five Tiger Generals + Strategist Council, including Guan Yu, Zhang Fei, Zhao Yun, Zhuge Liang',
+    demo2Title: 'Tech Company',
+    demo2Role: 'You are Tech Director',
+    demo2Desc: 'Frontend, Backend, Product, and QA teams',
+    demo3Title: 'US Government',
+    demo3Role: 'You are Trump',
+    demo3Desc: 'Economic Security, Defense & Diplomacy, Domestic Affairs teams',
+    qsTitle: 'Quick Start',
+    qs1Label: 'Install',
+    qs2Label: 'Start Server',
+    qs3Label: 'Register Carbon Node',
+    qs3Comment: '# Interactive: node name, skill tags',
+    qs4Label: 'AI Task Planning',
+    qs4Cmd: 'Rebuild the homepage',
+    qs4Comment: '# AI auto-breaks tasks, matches nodes, generates briefings',
+    footerDocs: 'Docs',
   },
 };
 
@@ -75,172 +177,85 @@ function t(key: string): string {
   return i18n[currentLang][key] ?? key;
 }
 
+// ─── Apply Language ───────────────────────────────────────────
+
 function applyLang(): void {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
-  document.title = t('pageTitle');
-  document.getElementById('subtitle')!.textContent = t('subtitle');
-  document.getElementById('tab-fleet')!.textContent = t('tabFleet');
-  document.getElementById('tab-pipeline')!.textContent = t('tabPipeline');
-  document.getElementById('tab-terminal')!.textContent = t('tabTerminal');
-  document.getElementById('lang-toggle')!.textContent = t('langToggle');
+  document.title = currentLang === 'zh' ? 'HumanClaw - 碳基节点编排框架' : 'HumanClaw - Carbon Node Orchestration';
 
-  // Re-render landing if showing
-  const activePanel = document.querySelector('.tab.active') as HTMLButtonElement;
-  if (activePanel && !apiAvailable) {
-    const panelId = activePanel.dataset.panel!;
-    renderLanding(document.getElementById(panelId)!);
-  }
-}
+  const toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.textContent = currentLang === 'zh' ? 'EN' : '中文';
 
-// ─── API Availability Check ─────────────────────────────────
-
-let apiAvailable = true;
-
-async function checkApi(): Promise<boolean> {
-  try {
-    const res = await fetch('/api/v1/nodes/status');
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-function renderLanding(container: HTMLElement): void {
-  container.innerHTML = `
-    <div style="max-width:720px;margin:0 auto;padding:40px 0;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <img src="./logo.jpg" alt="HumanClaw Logo" style="width:100px;height:100px;border-radius:16px;" />
-      </div>
-      <h2 style="color:var(--accent);font-family:var(--font-mono);margin-bottom:16px;text-align:center;">&gt; HumanClaw</h2>
-      <p style="color:var(--text);line-height:1.8;margin-bottom:24px;">
-        ${t('landingDesc')}
-      </p>
-      <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:var(--font-mono);font-size:14px;color:var(--accent);overflow-x:auto;line-height:1.6;">npm install -g @humanclaw/humanclaw
-humanclaw serve
-# Dashboard: http://localhost:2026</pre>
-      <div style="margin-top:32px;">
-        <h3 style="color:var(--text);margin-bottom:12px;">${t('archTitle')}</h3>
-        <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);line-height:1.5;">
-  ${t('archMaster')}
-    |
-    |-- ${t('archPlanning')}
-    |
-    |-- ${t('archDispatch')}
-    |                              |
-    |${t('archResume')}
-    |
-    v
-  ${t('archReview')}</pre>
-      </div>
-      <div style="margin-top:32px;">
-        <h3 style="color:var(--text);margin-bottom:12px;">${t('featTitle')}</h3>
-        <ul style="color:var(--text-dim);line-height:2;padding-left:20px;">
-          <li>${t('feat1')}</li>
-          <li>${t('feat2')}</li>
-          <li>${t('feat3')}</li>
-          <li>${t('feat4')}</li>
-          <li>${t('feat5')}</li>
-          <li>${t('feat6')}</li>
-          <li>${t('feat7')}</li>
-          <li>${t('feat8')}</li>
-        </ul>
-      </div>
-      <div style="margin-top:32px;">
-        <h3 style="color:var(--text);margin-bottom:12px;">${t('demoTitle')}</h3>
-        <p style="color:var(--text-dim);margin-bottom:12px;">${t('demoDesc')}</p>
-        <ul style="color:var(--text-dim);line-height:2;padding-left:20px;">
-          <li>🐉 ${t('demo1')}</li>
-          <li>💻 ${t('demo2')}</li>
-          <li>🇺🇸 ${t('demo3')}</li>
-        </ul>
-      </div>
-      <div style="margin-top:32px;display:flex;gap:12px;">
-        <a href="https://github.com/humanclaw/humanclaw" style="padding:10px 24px;background:var(--accent);color:var(--bg);border-radius:6px;text-decoration:none;font-weight:600;">GitHub</a>
-        <a href="https://www.npmjs.com/package/@humanclaw/humanclaw" style="padding:10px 24px;background:var(--surface);color:var(--accent);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-weight:600;">npm</a>
-      </div>
-    </div>
-  `;
-}
-
-// ─── Tab Navigation ──────────────────────────────────────────
-
-const tabs = document.querySelectorAll<HTMLButtonElement>('.tab');
-const panels = document.querySelectorAll<HTMLElement>('.panel');
-
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    panels.forEach(p => p.classList.remove('active'));
-
-    tab.classList.add('active');
-    const panelId = tab.dataset.panel!;
-    document.getElementById(panelId)!.classList.add('active');
-
-    loadPanel(panelId);
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n!;
+    const val = t(key);
+    if (val !== key) el.textContent = val;
   });
-});
+}
 
-// ─── Language Toggle ─────────────────────────────────────────
+// ─── Language Toggle ──────────────────────────────────────────
 
-document.getElementById('lang-toggle')!.addEventListener('click', () => {
+document.getElementById('lang-toggle')?.addEventListener('click', () => {
   currentLang = currentLang === 'zh' ? 'en' : 'zh';
   applyLang();
 });
 
-// ─── Panel Loading ───────────────────────────────────────────
+// ─── Smooth Scroll ────────────────────────────────────────────
 
-async function loadPanel(panelId: string): Promise<void> {
-  const container = document.getElementById(panelId)!;
+document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href')!);
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
 
-  if (!apiAvailable) {
-    renderLanding(container);
-    return;
+// ─── Copy npm command ─────────────────────────────────────────
+
+document.getElementById('btn-copy')?.addEventListener('click', async () => {
+  const cmd = 'npm install -g @humanclaw/humanclaw';
+  try {
+    await navigator.clipboard.writeText(cmd);
+    const icon = document.querySelector('.copy-icon');
+    if (icon) {
+      icon.textContent = t('copied');
+      setTimeout(() => { icon.textContent = t('copy'); }, 2000);
+    }
+  } catch {
+    // fallback: select text
   }
+});
 
-  switch (panelId) {
-    case 'fleet': {
-      container.innerHTML = '<div class="empty">Loading...</div>';
-      try {
-        const data = await fetchFleet();
-        renderFleet(container, data);
-      } catch {
-        renderLanding(container);
+// ─── Scroll Animations (Intersection Observer) ───────────────
+
+const observer = new IntersectionObserver(
+  entries => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
       }
-      break;
     }
-    case 'pipeline': {
-      container.innerHTML = '<div class="empty">Loading...</div>';
-      try {
-        const data = await fetchActiveJobs();
-        renderPipeline(container, data);
-      } catch {
-        renderLanding(container);
-      }
-      break;
+  },
+  { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+);
+
+document.querySelectorAll('.anim').forEach(el => observer.observe(el));
+
+// ─── Nav Scroll Shadow ───────────────────────────────────────
+
+const nav = document.getElementById('top-nav');
+if (nav) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 10) {
+      nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
+    } else {
+      nav.style.boxShadow = 'none';
     }
-    case 'terminal': {
-      renderTerminal(container);
-      break;
-    }
-  }
+  }, { passive: true });
 }
 
-// ─── Initial Load ────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────
 
-(async () => {
-  apiAvailable = await checkApi();
-  applyLang();
-  loadPanel('fleet');
-
-  if (apiAvailable) {
-    setInterval(() => {
-      const activePanel = document.querySelector('.tab.active') as HTMLButtonElement;
-      if (activePanel) {
-        const panelId = activePanel.dataset.panel!;
-        if (panelId !== 'terminal') {
-          loadPanel(panelId);
-        }
-      }
-    }, 10000);
-  }
-})();
+applyLang();

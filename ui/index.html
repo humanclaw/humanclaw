@@ -4,34 +4,276 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HumanClaw - 碳基节点编排框架</title>
+  <meta name="description" content="Carbon-based node orchestration framework — humans as distributed worker nodes, with AI planning, team management, and performance evaluation." />
   <link rel="icon" href="./logo.jpg" type="image/jpeg" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header>
-    <div class="header-row">
-      <div class="header-left">
-        <img src="./logo.jpg" alt="HumanClaw Logo" class="header-logo" />
-        <div>
-          <h1>HumanClaw</h1>
-          <p class="subtitle" id="subtitle">碳基节点编排框架 — 将人类抽象为分布式 Worker 节点</p>
-        </div>
+
+  <!-- ─── Top Nav ─────────────────────────────────────────── -->
+  <header class="top-nav" id="top-nav">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-brand">
+        <img src="./logo.jpg" alt="HumanClaw" class="nav-logo" />
+        <span class="nav-title">HumanClaw</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#architecture" data-i18n="navArch">架构</a>
+        <a href="#features" data-i18n="navFeat">特性</a>
+        <a href="#workflow" data-i18n="navWorkflow">工作流</a>
+        <a href="#demo" data-i18n="navDemo">场景</a>
+        <a href="#quickstart" data-i18n="navStart">快速上手</a>
+      </nav>
+      <div class="nav-right">
+        <a href="https://github.com/humanclaw/humanclaw" class="nav-github" target="_blank" rel="noopener">GitHub</a>
+        <button class="lang-toggle" id="lang-toggle">EN</button>
       </div>
-      <button class="lang-toggle" id="lang-toggle" title="Switch Language">EN</button>
     </div>
   </header>
 
-  <nav>
-    <button class="tab active" data-panel="fleet" id="tab-fleet">碳基算力池</button>
-    <button class="tab" data-panel="pipeline" id="tab-pipeline">任务编排</button>
-    <button class="tab" data-panel="terminal" id="tab-terminal">I/O 终端</button>
-  </nav>
+  <!-- ─── Hero ────────────────────────────────────────────── -->
+  <section id="hero" class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-content anim">
+      <img src="./logo.jpg" alt="HumanClaw Logo" class="hero-logo" />
+      <h1 class="hero-title">HumanClaw</h1>
+      <p class="hero-subtitle" data-i18n="heroSubtitle">碳基节点编排框架 — 将人类抽象为分布式 Worker 节点</p>
+      <p class="hero-slogan" data-i18n="heroSlogan">在 AI 时代，最需要被编排的不是容器，不是微服务，而是人。</p>
+      <div class="hero-actions">
+        <button class="btn-install" id="btn-copy">
+          <code>npm i -g @humanclaw/humanclaw</code>
+          <span class="copy-icon" data-i18n="copy">复制</span>
+        </button>
+        <a href="https://github.com/humanclaw/humanclaw" class="btn-gh" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+      <div class="hero-badges">
+        <a href="https://www.npmjs.com/package/@humanclaw/humanclaw"><img src="https://img.shields.io/npm/v/@humanclaw/humanclaw?color=00d4ff&labelColor=14141f" alt="npm" /></a>
+        <img src="https://img.shields.io/badge/License-MIT-blue?labelColor=14141f" alt="MIT" />
+        <img src="https://img.shields.io/badge/Node.js-22+-339933?labelColor=14141f" alt="Node" />
+      </div>
+    </div>
+  </section>
 
-  <main>
-    <section id="fleet" class="panel active"></section>
-    <section id="pipeline" class="panel"></section>
-    <section id="terminal" class="panel"></section>
-  </main>
+  <!-- ─── Architecture ────────────────────────────────────── -->
+  <section id="architecture" class="section">
+    <div class="container">
+      <h2 class="section-title anim" data-i18n="archTitle">核心架构</h2>
+      <p class="section-desc anim" data-i18n="archDesc">将人类抽象为碳基 Worker 节点，任务派发为进程挂起，交付结果为进程恢复。</p>
+
+      <div class="arch-flow anim">
+        <div class="arch-node arch-master">
+          <div class="arch-icon">👔</div>
+          <div class="arch-label" data-i18n="archMaster">Master 节点</div>
+          <div class="arch-hint" data-i18n="archMasterHint">老板 / PM</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node arch-ai">
+          <div class="arch-icon">🤖</div>
+          <div class="arch-label" data-i18n="archPlanning">AI 规划</div>
+          <div class="arch-hint" data-i18n="archPlanningHint">拆任务 + 话术 + DDL</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node arch-dispatch">
+          <div class="arch-icon">📡</div>
+          <div class="arch-label" data-i18n="archDispatch">分发 Dispatch</div>
+          <div class="arch-hint">trace_id</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node arch-worker">
+          <div class="arch-icon">🧑‍💻</div>
+          <div class="arch-label" data-i18n="archWorker">HumanAgent</div>
+          <div class="arch-hint" data-i18n="archWorkerHint">碳基算力</div>
+        </div>
+      </div>
+
+      <div class="arch-return anim">
+        <span class="arch-return-label" data-i18n="archReturn">← Resume + Result → AI 审查 + 绩效评价</span>
+      </div>
+
+      <div class="arch-concepts anim">
+        <div class="concept-card">
+          <div class="concept-icon">⏸️</div>
+          <h3 data-i18n="conceptSuspend">挂起 & 恢复</h3>
+          <p data-i18n="conceptSuspendDesc">任务分发后进程挂起，碳基节点异步执行，提交交付物后自动恢复。</p>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon">👥</div>
+          <h3 data-i18n="conceptTeam">团队上下文</h3>
+          <p data-i18n="conceptTeamDesc">碳基节点按团队组织，每个成员有独立的团队关系描述，注入 AI 规划。</p>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon">📊</div>
+          <h3 data-i18n="conceptEval">审查 & 绩效</h3>
+          <p data-i18n="conceptEvalDesc">LLM 审查交付质量，支持三种评分体系（Ali 3.75 / SABCD / EM+MM-）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Features ────────────────────────────────────────── -->
+  <section id="features" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title anim" data-i18n="featTitle">功能特性</h2>
+      <div class="feature-grid">
+        <div class="feature-card anim">
+          <div class="feature-icon">🧠</div>
+          <h3 data-i18n="feat1Title">AI 智能规划</h3>
+          <p data-i18n="feat1Desc">自然语言输入需求，AI 自动拆解任务、匹配碳基节点、生成布置话术。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">⚡</div>
+          <h3 data-i18n="feat2Title">碳基算力池</h3>
+          <p data-i18n="feat2Desc">将人类注册为带技能标签、关系描述的 Worker 节点，实时追踪状态。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">👥</div>
+          <h3 data-i18n="feat3Title">团队管理</h3>
+          <p data-i18n="feat3Desc">创建团队、管理成员，每人有独立团队关系，按团队维度规划任务。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">📊</div>
+          <h3 data-i18n="feat4Title">绩效评价</h3>
+          <p data-i18n="feat4Desc">三种评分体系（Ali 3.75 / SABCD / EM+MM-），AI 生成按人按任务的绩效。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">🎭</div>
+          <h3 data-i18n="feat5Title">模拟交付</h3>
+          <p data-i18n="feat5Desc">AI 角色扮演碳基节点，基于身份、技能和关系生成模拟交付物。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">🔍</div>
+          <h3 data-i18n="feat6Title">AI 聚合审查</h3>
+          <p data-i18n="feat6Desc">全部交付后，LLM 审查每个交付物质量（支持 GitHub URL），生成报告。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">🔌</div>
+          <h3 data-i18n="feat7Title">3 种 LLM 格式</h3>
+          <p data-i18n="feat7Desc">Anthropic Messages / OpenAI Chat / OpenAI Responses，自定义 Base URL。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">📐</div>
+          <h3 data-i18n="feat8Title">可伸缩编辑器</h3>
+          <p data-i18n="feat8Desc">所有文本区域支持拖拽调整大小和全屏展开，舒适编辑长文本。</p>
+        </div>
+        <div class="feature-card anim">
+          <div class="feature-icon">🎮</div>
+          <h3 data-i18n="feat9Title">开箱即用 Demo</h3>
+          <p data-i18n="feat9Desc">内置三国蜀汉、互联网大厂、美国政府三大场景，一键体验。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Workflow ─────────────────────────────────────────── -->
+  <section id="workflow" class="section">
+    <div class="container">
+      <h2 class="section-title anim" data-i18n="wfTitle">核心工作流</h2>
+      <div class="timeline anim">
+        <div class="tl-step">
+          <div class="tl-num">1</div>
+          <h3 data-i18n="wf1Title">镜像封装</h3>
+          <p data-i18n="wf1Desc">录入碳基成员，建立团队，构建算力池</p>
+        </div>
+        <div class="tl-step">
+          <div class="tl-num">2</div>
+          <h3 data-i18n="wf2Title">AI 规划</h3>
+          <p data-i18n="wf2Desc">输入需求，AI 拆解任务、匹配节点、生成话术</p>
+        </div>
+        <div class="tl-step">
+          <div class="tl-num">3</div>
+          <h3 data-i18n="wf3Title">确认分发</h3>
+          <p data-i18n="wf3Desc">预览规划结果，调整 DDL，一键分发</p>
+        </div>
+        <div class="tl-step">
+          <div class="tl-num">4</div>
+          <h3 data-i18n="wf4Title">异步恢复</h3>
+          <p data-i18n="wf4Desc">碳基节点提交交付物，系统唤醒 Job</p>
+        </div>
+        <div class="tl-step">
+          <div class="tl-num">5</div>
+          <h3 data-i18n="wf5Title">AI 审查</h3>
+          <p data-i18n="wf5Desc">LLM 审查交付质量，生成评分报告</p>
+        </div>
+        <div class="tl-step">
+          <div class="tl-num">6</div>
+          <h3 data-i18n="wf6Title">绩效评价</h3>
+          <p data-i18n="wf6Desc">选择评分体系，AI 生成绩效评分</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Demo Scenarios ──────────────────────────────────── -->
+  <section id="demo" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title anim" data-i18n="demoTitle">内置场景</h2>
+      <p class="section-desc anim" data-i18n="demoDesc">三个开箱即用的 Demo 场景，一键加载碳基节点和团队：</p>
+      <div class="demo-grid">
+        <div class="demo-card anim">
+          <div class="demo-emoji">🐉</div>
+          <h3 data-i18n="demo1Title">三国蜀汉</h3>
+          <p class="demo-role" data-i18n="demo1Role">你是刘备</p>
+          <p data-i18n="demo1Desc">五虎上将团队 + 谋士团，含关羽、张飞、赵云、诸葛亮等</p>
+        </div>
+        <div class="demo-card anim">
+          <div class="demo-emoji">💻</div>
+          <h3 data-i18n="demo2Title">互联网大厂</h3>
+          <p class="demo-role" data-i18n="demo2Role">你是技术总监</p>
+          <p data-i18n="demo2Desc">前端组、后端组、产品组、质量组四个团队</p>
+        </div>
+        <div class="demo-card anim">
+          <div class="demo-emoji">🇺🇸</div>
+          <h3 data-i18n="demo3Title">美国政府</h3>
+          <p class="demo-role" data-i18n="demo3Role">你是特朗普</p>
+          <p data-i18n="demo3Desc">经济安全团队、国防外交团队、国内事务团队</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Quick Start ─────────────────────────────────────── -->
+  <section id="quickstart" class="section">
+    <div class="container">
+      <h2 class="section-title anim" data-i18n="qsTitle">快速上手</h2>
+      <div class="qs-steps anim">
+        <div class="qs-step">
+          <div class="qs-label" data-i18n="qs1Label">安装</div>
+          <div class="code-block"><span class="code-prompt">$</span> npm install -g @humanclaw/humanclaw</div>
+        </div>
+        <div class="qs-step">
+          <div class="qs-label" data-i18n="qs2Label">启动服务</div>
+          <div class="code-block"><span class="code-prompt">$</span> humanclaw serve<br/><span class="code-comment"># Dashboard: http://localhost:2026</span></div>
+        </div>
+        <div class="qs-step">
+          <div class="qs-label" data-i18n="qs3Label">注册碳基节点</div>
+          <div class="code-block"><span class="code-prompt">$</span> humanclaw agent add<br/><span class="code-comment" data-i18n="qs3Comment"># 交互式录入：节点名称、技能标签</span></div>
+        </div>
+        <div class="qs-step">
+          <div class="qs-label" data-i18n="qs4Label">AI 规划任务</div>
+          <div class="code-block"><span class="code-prompt">$</span> humanclaw plan "<span data-i18n="qs4Cmd">完成首页重构</span>"<br/><span class="code-comment" data-i18n="qs4Comment"># AI 自动拆解任务、匹配节点、生成话术</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="./logo.jpg" alt="HumanClaw" class="footer-logo" />
+        <span>HumanClaw</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/humanclaw/humanclaw" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.npmjs.com/package/@humanclaw/humanclaw" target="_blank" rel="noopener">npm</a>
+        <a href="https://github.com/humanclaw/humanclaw/blob/main/README.md" target="_blank" rel="noopener" data-i18n="footerDocs">文档</a>
+      </div>
+      <p class="footer-copy">MIT License &copy; 2025 HumanClaw</p>
+    </div>
+  </footer>
 
   <script type="module" src="./main.ts"></script>
 </body>
