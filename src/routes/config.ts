@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getConfig, setConfig, deleteConfig } from '../models/config.js';
+import { getDb } from '../db/connection.js';
 
 const router = Router();
 
@@ -67,6 +68,20 @@ router.put('/', (req, res) => {
     }
   }
 
+  res.json({ ok: true });
+});
+
+// POST /api/v1/config/reset - Clear all data (agents, jobs, tasks, teams, evaluations)
+router.post('/reset', (_req, res) => {
+  const db = getDb();
+  db.exec(`
+    DELETE FROM evaluations;
+    DELETE FROM team_members;
+    DELETE FROM tasks;
+    DELETE FROM jobs;
+    DELETE FROM teams;
+    DELETE FROM agents;
+  `);
   res.json({ ok: true });
 });
 

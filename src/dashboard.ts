@@ -1021,7 +1021,8 @@ window.showSettings=async function(){
       +'<div class="fg"><label>API Key</label><input id="cfg-key" type="password" placeholder="'+(cfg.api_key_set?'已配置，留空则不修改':'输入你的 API Key...')+'"/><div class="hint">Anthropic: sk-ant-... | OpenAI: sk-...</div></div>'
       +'<div class="fg"><label>模型 <span style="color:var(--text-dim);font-weight:400">(可选，留空用默认)</span></label><input id="cfg-model" value="'+esc(cfg.model||'')+'" placeholder="例: claude-sonnet-4-20250514 / gpt-4o"/></div>'
       +'<div class="fg"><label>API Base URL <span style="color:var(--text-dim);font-weight:400">(可选，留空用官方地址)</span></label><input id="cfg-baseurl" value="'+esc(cfg.base_url||'')+'" placeholder="例: https://your-proxy.com"/><div class="hint">私有部署: 填写你的模型服务地址，如 vLLM / Ollama / Azure 等</div></div>'
-      +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div>';
+      +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div>'
+      +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">&#9888; 危险操作</div><button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="resetAllData()">一键清空所有数据</button><div class="hint">清空所有节点、团队、任务和评价数据，可重新加载 Demo 场景。LLM 配置不受影响。</div></div>';
   }catch{
     ov.querySelector('.form-card').innerHTML='<h3>LLM 设置</h3><p style="color:var(--red)">加载配置失败</p>';
   }
@@ -1040,6 +1041,16 @@ window.saveSettings=async function(){
     if(!r.ok){const d=await r.json();toast(d.error||'保存失败',false);return}
     toast('设置已保存',true);
     document.getElementById('overlay').remove();
+  }catch{toast('网络错误',false)}
+};
+window.resetAllData=async function(){
+  if(!confirm('确定清空所有数据？节点、团队、任务、评价将全部删除。\\n\\nLLM 配置不受影响，清空后可重新加载 Demo。'))return;
+  try{
+    const r=await fetch(API+'/config/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if(!r.ok){toast('清空失败',false);return}
+    toast('所有数据已清空',true);
+    const ov=document.getElementById('overlay');if(ov)ov.remove();
+    load('fleet');
   }catch{toast('网络错误',false)}
 };
 
