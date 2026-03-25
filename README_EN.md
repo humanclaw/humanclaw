@@ -158,9 +158,9 @@ All text editing areas (task delivery, review results, planning briefings) suppo
 
 The dashboard includes three built-in demo scenarios, one-click to load carbon-based nodes and teams:
 
-- **Three Kingdoms (Shu Han)** 🐉 — You are Liu Bei, with the Five Tiger Generals and Strategist Council teams
-- **Tech Company** 💻 — You are the Tech Director, managing Frontend, Backend, Product, and QA teams
-- **US Government** 🇺🇸 — You are Trump, directing Economic Security, Defense & Diplomacy, and Domestic Affairs teams
+- **Three Kingdoms (Shu Han)** 🐉 — You are Liu Bei, commanding Guan Yu, Zhang Fei, Zhao Yun, Zhuge Liang and more
+- **Tech Company** 💻 — You are the Tech Director, managing frontend, backend, algorithm, product, design, QA, and DevOps
+- **US Government** 🇺🇸 — You are Trump, directing Musk, Rubio, Bessent and the core cabinet
 
 ## Core Workflow
 

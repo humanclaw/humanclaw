@@ -165,6 +165,9 @@ main{padding:24px 32px;max-width:1200px}
 .md-fullscreen-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
 /* Team badge */
 .team-badge{display:inline-block;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);border-radius:4px;padding:1px 8px;font-size:10px;color:var(--purple);margin-right:4px;margin-bottom:2px}
+.team-group{margin-bottom:28px}
+.team-group-header{display:flex;align-items:center;gap:6px;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:12px;cursor:pointer}
+.team-group-header:hover .agent-name{color:var(--accent)}
 /* Evaluation */
 .eval-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-weight:700;font-size:13px;font-family:var(--font-mono)}
 .eval-badge.top{background:rgba(34,197,94,.15);color:var(--green)}
@@ -228,8 +231,7 @@ const DEMOS={
     desc:'桃园结义，三顾茅庐。作为蜀汉之主，统领五虎上将和卧龙凤雏，逐鹿中原。',
     prompt:'北伐中原，兵分三路，需要攻城、断粮和外交三管齐下',
     teams:[
-      {name:'五虎上将',description:'蜀汉五大猛将',members:['关羽','张飞','赵云','黄忠','马超'],relationships:{'关羽':'义弟兼军团统帅','张飞':'义弟兼先锋大将','赵云':'心腹爱将','黄忠':'老当益壮的猛将','马超':'归降的西凉虎将'}},
-      {name:'谋士团',description:'运筹帷幄的智囊团',members:['诸葛亮','庞统'],relationships:{'诸葛亮':'首席军师，如鱼得水','庞统':'副军师，奇谋百出'}}
+      {name:'三国蜀汉',description:'刘备麾下全体文臣武将',members:['关羽','张飞','赵云','诸葛亮','庞统','黄忠','马超'],relationships:{'关羽':'义弟兼军团统帅','张飞':'义弟兼先锋大将','赵云':'心腹爱将','诸葛亮':'首席军师，如鱼得水','庞统':'副军师，奇谋百出','黄忠':'老当益壮的猛将','马超':'归降的西凉虎将'}}
     ],
     agents:[
       {name:'关羽',capabilities:['武艺','统兵','镇守要地','水军指挥'],relationship:'义弟，桃园结义二弟，最信任的兄弟和大将'},
@@ -246,10 +248,7 @@ const DEMOS={
     desc:'带领一支全栈团队，从前端到运维一应俱全。应对高并发、搞 AI、上线新系统。',
     prompt:'上线一个 AI 智能客服系统，包括前端界面、后端 API、推荐算法、压力测试和灰度发布方案',
     teams:[
-      {name:'前端组',description:'负责所有前端页面开发',members:['前端老李','设计师小林'],relationships:{'前端老李':'前端TL，核心骨干','设计师小林':'资深设计师'}},
-      {name:'后端组',description:'后端架构与服务开发',members:['后端大王','算法小陈'],relationships:{'后端大王':'架构师，技术决策者','算法小陈':'算法工程师，需要指导'}},
-      {name:'产品组',description:'产品需求与项目管理',members:['产品经理 Amy'],relationships:{'产品经理 Amy':'产品负责人'}},
-      {name:'质量组',description:'测试与运维保障',members:['测试负责人老赵','运维 DevOps 阿杰'],relationships:{'测试负责人老赵':'质量把关人','运维 DevOps 阿杰':'SRE负责人'}}
+      {name:'互联网大厂',description:'技术总监直管的全栈团队',members:['前端老李','后端大王','算法小陈','产品经理 Amy','设计师小林','测试负责人老赵','运维 DevOps 阿杰'],relationships:{'前端老李':'前端TL，核心骨干','后端大王':'架构师，技术决策者','算法小陈':'算法工程师，需要指导','产品经理 Amy':'产品负责人','设计师小林':'资深设计师','测试负责人老赵':'质量把关人','运维 DevOps 阿杰':'SRE负责人'}}
     ],
     agents:[
       {name:'前端老李',capabilities:['React','TypeScript','Next.js','移动端适配','性能优化'],relationship:'P7 前端 TL，跟了你三年，技术过硬但最近有点倦怠'},
@@ -266,9 +265,7 @@ const DEMOS={
     desc:'Make the executive branch great again! 管理你的核心内阁成员，推行政策议程。',
     prompt:'制定一个让美国制造业回流的综合计划，需要关税政策、减税方案、能源保障、边境安全配合和政府效率优化',
     teams:[
-      {name:'经济安全团队',description:'经济政策与财政管理',members:['Scott Bessent','Elon Musk'],relationships:{'Scott Bessent':'财政部长，首席经济顾问','Elon Musk':'DOGE 负责人，效率改革推动者'}},
-      {name:'国防外交团队',description:'国防与外交事务',members:['Marco Rubio','Pete Hegseth','Tulsi Gabbard'],relationships:{'Marco Rubio':'国务卿，外交总管','Pete Hegseth':'国防部长，军事事务','Tulsi Gabbard':'情报总监，安全评估'}},
-      {name:'国内事务团队',description:'国内安全与公共服务',members:['Kristi Noem','Robert F. Kennedy Jr.'],relationships:{'Kristi Noem':'国土安全部长，边境强硬派','Robert F. Kennedy Jr.':'卫生部长，医疗改革'}}
+      {name:'美国政府',description:'总统直属核心内阁',members:['Elon Musk','Marco Rubio','Pete Hegseth','Scott Bessent','Kristi Noem','Tulsi Gabbard','Robert F. Kennedy Jr.'],relationships:{'Elon Musk':'DOGE 负责人，效率改革推动者','Marco Rubio':'国务卿，外交总管','Pete Hegseth':'国防部长，军事事务','Scott Bessent':'财政部长，首席经济顾问','Kristi Noem':'国土安全部长，边境强硬派','Tulsi Gabbard':'情报总监，安全评估','Robert F. Kennedy Jr.':'卫生部长，医疗改革'}}
     ],
     agents:[
       {name:'Elon Musk',capabilities:['政府效率','成本削减','科技创新','SpaceX','Tesla','社交媒体'],relationship:'DOGE 负责人，世界首富，Twitter/X 老板，最具影响力的盟友'},
@@ -396,41 +393,64 @@ async function loadFleet(el){
       h+=renderDemoCards();
       el.innerHTML=h;return;
     }
-    h+='<div class="grid">';
-    for(const a of d.agents){
-      h+='<div class="card"><div class="agent-header"><span class="dot '+a.status+'"></span><span class="agent-name">'+esc(a.name)+'</span></div>';
-      h+='<div class="agent-id">'+a.agent_id+'</div>';
-      if(a.relationship)h+='<div style="font-size:11px;color:var(--purple);margin-bottom:4px">&#128101; '+esc(a.relationship)+'</div>';
-      // Team badges
-      const agentTeams=cachedTeams.filter(tm=>tm.members&&tm.members.some(m=>m.agent_id===a.agent_id));
-      if(agentTeams.length){h+='<div style="margin-bottom:4px">';for(const tm of agentTeams)h+='<span class="team-badge">'+esc(tm.name)+'</span>';h+='</div>'}
-      h+='<div class="caps">';for(const c of a.capabilities)h+='<span class="cap">'+esc(c)+'</span>';h+='</div>';
-      h+='<div class="agent-meta"><span>任务: '+a.active_task_count+'</span>';
-      if(a.avg_delivery_hours!==null)h+='<span>平均交付: '+a.avg_delivery_hours+'h</span>';
-      h+='</div>';
-      h+='<div class="agent-actions">';
-      h+='<select onchange="changeStatus(\\''+a.agent_id+'\\',this.value)">';
-      for(const s of ['IDLE','BUSY','OFFLINE','OOM'])h+='<option'+(s===a.status?' selected':'')+'>'+s+'</option>';
-      h+='</select>';
-      h+='<button onclick="deleteAgent(\\''+a.agent_id+'\\')">删除</button>';
-      h+='</div></div>';
+    // Build agent card HTML helper
+    function agentCard(a){
+      let c='<div class="card"><div class="agent-header"><span class="dot '+a.status+'"></span><span class="agent-name">'+esc(a.name)+'</span></div>';
+      c+='<div class="agent-id">'+a.agent_id+'</div>';
+      if(a.relationship)c+='<div style="font-size:11px;color:var(--purple);margin-bottom:4px">&#128101; '+esc(a.relationship)+'</div>';
+      c+='<div class="caps">';for(const cap of a.capabilities)c+='<span class="cap">'+esc(cap)+'</span>';c+='</div>';
+      c+='<div class="agent-meta"><span>任务: '+a.active_task_count+'</span>';
+      if(a.avg_delivery_hours!==null)c+='<span>平均交付: '+a.avg_delivery_hours+'h</span>';
+      c+='</div>';
+      c+='<div class="agent-actions">';
+      c+='<select onchange="changeStatus(\\''+a.agent_id+'\\',this.value)">';
+      for(const s of ['IDLE','BUSY','OFFLINE','OOM'])c+='<option'+(s===a.status?' selected':'')+'>'+s+'</option>';
+      c+='</select>';
+      c+='<button onclick="deleteAgent(\\''+a.agent_id+'\\')">删除</button>';
+      c+='</div></div>';
+      return c;
     }
-    h+='</div>';
-    // Teams section
-    h+='<div style="margin-top:32px"><div class="section-hd"><h2>团队管理</h2><button class="btn btn-primary btn-sm" onclick="showCreateTeam()">+ 创建团队</button></div>';
+    // Group agents by team
+    const assignedIds=new Set();
     if(cachedTeams.length){
-      h+='<div class="grid">';
       for(const tm of cachedTeams){
-        const memberCount=tm.members?tm.members.length:0;
-        h+='<div class="card" style="cursor:pointer" onclick="showTeamDetail(\\''+tm.team_id+'\\')">';
-        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">&#128101;</span><span class="agent-name">'+esc(tm.name)+'</span></div>';
-        if(tm.description)h+='<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">'+esc(tm.description)+'</div>';
-        h+='<div style="font-size:11px;color:var(--accent)">'+memberCount+' 个成员</div>';
+        if(!tm.members||!tm.members.length)continue;
+        const teamAgents=d.agents.filter(a=>tm.members.some(m=>m.agent_id===a.agent_id));
+        if(!teamAgents.length)continue;
+        for(const a of teamAgents)assignedIds.add(a.agent_id);
+        h+='<div class="team-group">';
+        h+='<div class="team-group-header" onclick="showTeamDetail(\\''+tm.team_id+'\\')">';
+        h+='<span style="font-size:18px">&#128101;</span> <span class="agent-name">'+esc(tm.name)+'</span>';
+        if(tm.description)h+=' <span style="font-size:12px;color:var(--text-dim);margin-left:8px">'+esc(tm.description)+'</span>';
+        h+=' <span style="font-size:11px;color:var(--accent);margin-left:8px">'+teamAgents.length+' 人</span>';
+        h+='</div>';
+        h+='<div class="grid">';
+        for(const a of teamAgents)h+=agentCard(a);
+        h+='</div></div>';
+      }
+    }
+    // Ungrouped agents
+    const ungrouped=d.agents.filter(a=>!assignedIds.has(a.agent_id));
+    if(ungrouped.length){
+      if(assignedIds.size>0){
+        h+='<div class="team-group">';
+        h+='<div class="team-group-header"><span style="font-size:18px">&#128100;</span> <span class="agent-name">未分组</span> <span style="font-size:11px;color:var(--accent);margin-left:8px">'+ungrouped.length+' 人</span></div>';
+        h+='<div class="grid">';
+        for(const a of ungrouped)h+=agentCard(a);
+        h+='</div></div>';
+      } else {
+        h+='<div class="grid">';
+        for(const a of ungrouped)h+=agentCard(a);
         h+='</div>';
       }
-      h+='</div>';
-    }else{
-      h+='<div style="font-size:12px;color:var(--text-dim);margin-top:8px">暂无团队。创建团队后可按团队分配任务。</div>';
+    }
+    // Team management buttons
+    h+='<div style="margin-top:24px;display:flex;gap:8px;align-items:center">';
+    h+='<button class="btn btn-primary btn-sm" onclick="showCreateTeam()">+ 创建团队</button>';
+    if(cachedTeams.length){
+      for(const tm of cachedTeams){
+        h+='<span class="team-badge" style="cursor:pointer" onclick="showTeamDetail(\\''+tm.team_id+'\\')">'+esc(tm.name)+'</span>';
+      }
     }
     h+='</div>';
     el.innerHTML=h;
