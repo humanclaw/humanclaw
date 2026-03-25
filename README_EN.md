@@ -21,7 +21,7 @@
 
 HumanClaw is a carbon-based node orchestration framework. The system abstracts real humans as Agents (carbon-based nodes), models task dispatch and result collection as process **Suspend** and **Resume**.
 
-Core flow: natural language input → select people → AI auto-plans (breaks down tasks + generates briefings + sets deadlines) → confirm dispatch → collect deliverables → AI aggregated review.
+Core flow: natural language input → select people/team → AI auto-plans (breaks down tasks + generates briefings + sets deadlines) → confirm dispatch → collect deliverables → AI aggregated review → performance evaluation.
 
 ## Core Architecture
 
@@ -31,19 +31,20 @@ Core flow: natural language input → select people → AI auto-plans (breaks do
 │   Master    │     trace_id      │  HumanAgent  │
 │  (Boss/PM)  │ ◄──────────────   │  (Carbon CPU)│
 │             │   Resume + Result │              │
-└─────┬───────┘                   └──────────────┘
-      │
-      │  AI Review
-      ▼
-┌─────────────┐
-│  LLM Review │
-│ (Claude/GPT)│
-└─────────────┘
+└─────┬───────┘                   └──────┬───────┘
+      │                                  │
+      │  AI Review + Eval           Team Context
+      ▼                                  ▼
+┌─────────────┐                   ┌──────────────┐
+│  LLM Review │                   │     Team     │
+│ + Perf Eval │                   │  Management  │
+└─────────────┘                   └──────────────┘
 ```
 
 - **Master Node**: Input requirements, AI auto-breaks them into independent sub-tasks, dispatches to carbon-based nodes
 - **Worker Node (HumanAgent)**: Receives independent tasks with a `trace_id`, executes asynchronously in the carbon-based world
-- **AI Review**: After all tasks complete, LLM reviews deliverable quality and generates a report
+- **Team Management**: Carbon-based nodes organized into teams, each team with its own relationship context
+- **AI Review + Performance Evaluation**: After all tasks complete, LLM reviews deliverable quality and generates reports with performance ratings
 
 ## Quick Start
 
@@ -83,76 +84,98 @@ humanclaw agent list
 
 ## API Endpoints
 
+### Carbon-Based Nodes
+
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/v1/nodes/status` | Carbon compute pool status |
 | `POST` | `/api/v1/nodes` | Register carbon-based node |
+| `GET` | `/api/v1/nodes/:id` | Get node details (with teams) |
 | `PATCH` | `/api/v1/nodes/:id/status` | Update node status |
-| `POST` | `/api/v1/jobs/plan` | AI task planning (does not dispatch) |
+| `DELETE` | `/api/v1/nodes/:id` | Delete node |
+
+### Task Orchestration
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/jobs/plan` | AI smart planning (supports `team_id`) |
 | `POST` | `/api/v1/jobs/create` | Create and dispatch job |
-| `GET` | `/api/v1/jobs/active` | Get active jobs data |
+| `GET` | `/api/v1/jobs/active` | Get dashboard data |
 | `POST` | `/api/v1/tasks/resume` | Submit deliverable, trigger resume |
-| `POST` | `/api/v1/tasks/reject` | Reject and retry |
+| `POST` | `/api/v1/tasks/reject` | Reject and redo |
 | `POST` | `/api/v1/tasks/simulate` | AI simulate delivery (role-play) |
-| `POST` | `/api/v1/jobs/:id/review` | AI aggregated review of deliverables |
+| `POST` | `/api/v1/jobs/:id/review` | AI aggregated review (supports rating system) |
+
+### Team Management
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/teams` | Team list (with members) |
+| `GET` | `/api/v1/teams/:id` | Team details |
+| `POST` | `/api/v1/teams` | Create team |
+| `DELETE` | `/api/v1/teams/:id` | Delete team |
+| `POST` | `/api/v1/teams/:id/members` | Add member |
+| `DELETE` | `/api/v1/teams/:id/members/:agent_id` | Remove member |
+| `PUT` | `/api/v1/teams/:id/members/:agent_id` | Update member team relationship |
+
+### Performance Evaluation
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/evaluations/generate` | Generate performance evaluations |
+| `GET` | `/api/v1/evaluations/job/:job_id` | Query evaluations by Job |
+| `GET` | `/api/v1/evaluations/agent/:agent_id` | Query evaluation history by Agent |
+| `GET` | `/api/v1/evaluations/dashboard` | Performance dashboard |
+
+### LLM Configuration
+
+| Method | Path | Description |
+|--------|------|-------------|
 | `GET` | `/api/v1/config` | Get LLM configuration |
 | `PUT` | `/api/v1/config` | Update LLM configuration |
-
-### AI Planning Example
-
-```bash
-curl -X POST http://localhost:2026/api/v1/jobs/plan \
-  -H "Content-Type: application/json" \
-  -d '{ "prompt": "Rebuild the homepage" }'
-```
-
-### Submit Deliverable
-
-```bash
-curl -X POST http://localhost:2026/api/v1/tasks/resume \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trace_id": "TK-9527",
-    "result_data": { "text": "https://github.com/org/repo/pull/42" }
-  }'
-```
 
 ## Dashboard
 
 The web dashboard includes three core views:
 
-- **Carbon Compute Pool** — Real-time carbon-based node status (🟢Idle 🟡Busy 🔴Offline 🟣OOM), add/remove nodes
-- **Carbon Orchestration Pipeline** — AI planning + task board + interactive task cards (click to submit/reject) + simulate delivery + AI review
+- **Carbon Compute Pool** — Real-time carbon-based node status (🟢Idle 🟡Busy 🔴Offline 🟣OOM), team management, add/remove nodes
+- **Carbon Orchestration Pipeline** — AI smart planning (by team) + task board + simulate delivery + AI aggregated review + performance evaluation
 - **I/O Resolution Terminal** — Input trace_id and payload to trigger system resume
 
 ### AI Features
 
-- **Smart Planning** — Input requirements, AI auto-breaks tasks, matches nodes, generates briefings, sets adjustable deadlines
-- **Simulate Delivery** — Click a button, AI role-plays as the worker node based on their identity, skills, and relationship to generate mock deliverables
+- **Smart Planning** — Input requirements, AI auto-breaks tasks, matches nodes, generates briefings, sets deadlines (supports team-based planning with team relationship context injection)
+- **Simulate Delivery** — Click a button, AI role-plays as the worker node based on identity, skills, and relationships to generate mock deliverables
 - **Aggregated Review** — After all deliveries, AI reviews each deliverable (supports GitHub PR/Commit/Issue URLs), generates quality report
-- **Configurable LLM** — Supports Claude / OpenAI, custom Base URL for private deployments (vLLM / Ollama / Azure)
+- **Performance Evaluation** — Three rating systems (Ali 3.75 / SABCD / EM+MM-), AI generates per-person per-task performance ratings and comments
+- **Configurable LLM** — Supports 3 API formats (Anthropic Messages / OpenAI Chat Completions / OpenAI Responses), custom Base URL for private model services
+
+### Resizable Editors
+
+All text editing areas (task delivery, review results, planning briefings) support drag-to-resize and fullscreen expansion.
 
 ### Demo Scenarios
 
-The dashboard includes three built-in demo scenarios for instant hands-on experience:
+The dashboard includes three built-in demo scenarios, one-click to load carbon-based nodes and teams:
 
-- **Three Kingdoms (Shu Han)** 🐉 — You are Liu Bei, commanding Guan Yu, Zhang Fei, Zhao Yun, Zhuge Liang and more
-- **Tech Company** 💻 — You are the Tech Director, managing frontend, backend, algorithm, product, design, QA, and ops teams
-- **US Government** 🇺🇸 — You are Trump, directing Musk, Rubio, Bessent and the core cabinet
+- **Three Kingdoms (Shu Han)** 🐉 — You are Liu Bei, with the Five Tiger Generals and Strategist Council teams
+- **Tech Company** 💻 — You are the Tech Director, managing Frontend, Backend, Product, and QA teams
+- **US Government** 🇺🇸 — You are Trump, directing Economic Security, Defense & Diplomacy, and Domestic Affairs teams
 
 ## Core Workflow
 
-1. **Agent Encapsulation** — Register human members, build the carbon compute pool
-2. **AI Planning** — Input requirements, AI breaks tasks, matches nodes, generates briefings and deadlines
+1. **Agent Encapsulation** — Register human members, build teams, construct the carbon compute pool
+2. **AI Planning** — Input requirements, select team/nodes, AI breaks tasks, generates briefings and deadlines
 3. **Confirm Dispatch** — Preview plan, adjust deadlines, one-click dispatch
 4. **Async Resume** — Carbon-based nodes submit deliverables (supports GitHub URLs), system wakes up the Job
 5. **AI Review** — When all sub-tasks complete, LLM reviews deliverable quality and generates a report
+6. **Performance Evaluation** — Select rating system, AI generates performance ratings for each carbon-based node
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HUMANCLAW_LLM_PROVIDER` | `claude` | LLM provider: `claude` or `openai` |
+| `HUMANCLAW_LLM_PROVIDER` | `anthropic` | API format: `anthropic` / `openai` / `responses` |
 | `HUMANCLAW_LLM_API_KEY` | - | LLM API Key (required for AI features) |
 | `HUMANCLAW_LLM_MODEL` | per provider | Optional model override |
 | `HUMANCLAW_LLM_BASE_URL` | official | Custom API URL (private deployments) |
@@ -170,14 +193,21 @@ interface HumanAgent {
   status: AgentStatus;    // IDLE | BUSY | OFFLINE | OOM
 }
 
-interface HumanTask {
-  trace_id: string;       // TK-9527
-  job_id: string;
-  assignee_id: string;
-  todo_description: string;
-  deadline: string;
-  status: TaskStatus;     // PENDING | DISPATCHED | RESOLVED | OVERDUE
-  result_data: unknown;
+interface Team {
+  team_id: string;        // team_xxxxxxxx
+  name: string;           // "Frontend Team"
+  description: string;
+  members: TeamMember[];  // with team relationships
+}
+
+interface Evaluation {
+  eval_id: string;
+  agent_id: string;
+  trace_id: string;
+  rating_system: 'ali' | 'letter' | 'em';
+  rating: string;         // "3.75" / "A" / "EM+"
+  weight: number;
+  comment: string;
 }
 ```
 
@@ -197,10 +227,10 @@ npm run lint       # Type check
 - **Runtime**: Node.js 22+, TypeScript (ESM, strict)
 - **API**: Express v5
 - **Storage**: SQLite (better-sqlite3, WAL mode)
-- **LLM**: Claude / OpenAI (native fetch, zero dependencies)
+- **LLM**: 3 API formats (Anthropic / OpenAI / Responses), native fetch, zero dependencies
 - **CLI**: Commander.js + @clack/prompts
 - **Dashboard**: Inline HTML (no build step)
-- **Testing**: Vitest (40 tests)
+- **Testing**: Vitest (68 tests)
 
 ## License
 

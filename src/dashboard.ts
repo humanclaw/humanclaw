@@ -153,6 +153,23 @@ main{padding:24px 32px;max-width:1200px}
 .task-row .remove-task{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;line-height:1}
 .task-row .fg{margin-bottom:10px}
 .task-row .fg:last-child{margin-bottom:0}
+/* Markdown Editor */
+.md-editor{position:relative}
+.md-editor textarea{min-height:120px;resize:vertical;font-family:var(--font-mono);font-size:12px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);outline:none;transition:border-color .15s}
+.md-editor textarea:focus{border-color:var(--accent)}
+.md-expand-btn{position:absolute;top:6px;right:6px;background:var(--surface-hover);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;width:24px;height:24px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:all .15s;line-height:1}
+.md-expand-btn:hover{color:var(--accent);border-color:var(--accent)}
+.md-editor.fullscreen{position:fixed;inset:20px;z-index:200;background:var(--surface);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+.md-editor.fullscreen textarea{flex:1;min-height:unset;height:100%;resize:none;font-size:14px}
+.md-editor.fullscreen .md-expand-btn{top:22px;right:22px}
+.md-fullscreen-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
+/* Team badge */
+.team-badge{display:inline-block;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);border-radius:4px;padding:1px 8px;font-size:10px;color:var(--purple);margin-right:4px;margin-bottom:2px}
+/* Evaluation */
+.eval-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-weight:700;font-size:13px;font-family:var(--font-mono)}
+.eval-badge.top{background:rgba(34,197,94,.15);color:var(--green)}
+.eval-badge.mid{background:rgba(234,179,8,.15);color:var(--yellow)}
+.eval-badge.low{background:rgba(239,68,68,.15);color:var(--red)}
 </style>
 </head>
 <body>
@@ -182,8 +199,25 @@ function toast(msg,ok){
   setTimeout(()=>t.remove(),3500);
 }
 let cachedAgents=[];
+let cachedTeams=[];
 let currentPlan=null;
 let selectedAgentIds=new Set();
+let selectedTeamId='';
+
+window.toggleFullscreen=function(btn){
+  const editor=btn.closest('.md-editor');
+  if(editor.classList.contains('fullscreen')){
+    editor.classList.remove('fullscreen');
+    const bd=document.querySelector('.md-fullscreen-backdrop');
+    if(bd)bd.remove();
+  }else{
+    const bd=document.createElement('div');bd.className='md-fullscreen-backdrop';
+    bd.onclick=()=>{editor.classList.remove('fullscreen');bd.remove()};
+    document.body.appendChild(bd);
+    editor.classList.add('fullscreen');
+    const ta=editor.querySelector('textarea');if(ta)ta.focus();
+  }
+};
 
 // ═══════════════════════════════════════════════
 // DEMO SCENARIOS
@@ -193,6 +227,10 @@ const DEMOS={
     emoji:'&#128009;',title:'三国蜀汉',role:'你是刘备',
     desc:'桃园结义，三顾茅庐。作为蜀汉之主，统领五虎上将和卧龙凤雏，逐鹿中原。',
     prompt:'北伐中原，兵分三路，需要攻城、断粮和外交三管齐下',
+    teams:[
+      {name:'五虎上将',description:'蜀汉五大猛将',members:['关羽','张飞','赵云','黄忠','马超'],relationships:{'关羽':'义弟兼军团统帅','张飞':'义弟兼先锋大将','赵云':'心腹爱将','黄忠':'老当益壮的猛将','马超':'归降的西凉虎将'}},
+      {name:'谋士团',description:'运筹帷幄的智囊团',members:['诸葛亮','庞统'],relationships:{'诸葛亮':'首席军师，如鱼得水','庞统':'副军师，奇谋百出'}}
+    ],
     agents:[
       {name:'关羽',capabilities:['武艺','统兵','镇守要地','水军指挥'],relationship:'义弟，桃园结义二弟，最信任的兄弟和大将'},
       {name:'张飞',capabilities:['武艺','先锋突击','骑兵指挥','威慑敌军'],relationship:'义弟，桃园结义三弟，性如烈火但忠心耿耿'},
@@ -207,6 +245,12 @@ const DEMOS={
     emoji:'&#128187;',title:'互联网大厂',role:'你是技术总监',
     desc:'带领一支全栈团队，从前端到运维一应俱全。应对高并发、搞 AI、上线新系统。',
     prompt:'上线一个 AI 智能客服系统，包括前端界面、后端 API、推荐算法、压力测试和灰度发布方案',
+    teams:[
+      {name:'前端组',description:'负责所有前端页面开发',members:['前端老李','设计师小林'],relationships:{'前端老李':'前端TL，核心骨干','设计师小林':'资深设计师'}},
+      {name:'后端组',description:'后端架构与服务开发',members:['后端大王','算法小陈'],relationships:{'后端大王':'架构师，技术决策者','算法小陈':'算法工程师，需要指导'}},
+      {name:'产品组',description:'产品需求与项目管理',members:['产品经理 Amy'],relationships:{'产品经理 Amy':'产品负责人'}},
+      {name:'质量组',description:'测试与运维保障',members:['测试负责人老赵','运维 DevOps 阿杰'],relationships:{'测试负责人老赵':'质量把关人','运维 DevOps 阿杰':'SRE负责人'}}
+    ],
     agents:[
       {name:'前端老李',capabilities:['React','TypeScript','Next.js','移动端适配','性能优化'],relationship:'P7 前端 TL，跟了你三年，技术过硬但最近有点倦怠'},
       {name:'后端大王',capabilities:['Java','Go','微服务','数据库设计','高并发架构'],relationship:'P8 后端架构师，技术大拿，说话直来直去'},
@@ -221,6 +265,11 @@ const DEMOS={
     emoji:'&#127482;&#127480;',title:'美国政府',role:'你是特朗普 (POTUS)',
     desc:'Make the executive branch great again! 管理你的核心内阁成员，推行政策议程。',
     prompt:'制定一个让美国制造业回流的综合计划，需要关税政策、减税方案、能源保障、边境安全配合和政府效率优化',
+    teams:[
+      {name:'经济安全团队',description:'经济政策与财政管理',members:['Scott Bessent','Elon Musk'],relationships:{'Scott Bessent':'财政部长，首席经济顾问','Elon Musk':'DOGE 负责人，效率改革推动者'}},
+      {name:'国防外交团队',description:'国防与外交事务',members:['Marco Rubio','Pete Hegseth','Tulsi Gabbard'],relationships:{'Marco Rubio':'国务卿，外交总管','Pete Hegseth':'国防部长，军事事务','Tulsi Gabbard':'情报总监，安全评估'}},
+      {name:'国内事务团队',description:'国内安全与公共服务',members:['Kristi Noem','Robert F. Kennedy Jr.'],relationships:{'Kristi Noem':'国土安全部长，边境强硬派','Robert F. Kennedy Jr.':'卫生部长，医疗改革'}}
+    ],
     agents:[
       {name:'Elon Musk',capabilities:['政府效率','成本削减','科技创新','SpaceX','Tesla','社交媒体'],relationship:'DOGE 负责人，世界首富，Twitter/X 老板，最具影响力的盟友'},
       {name:'Marco Rubio',capabilities:['外交政策','拉美事务','国际谈判','制裁政策','国家安全'],relationship:'国务卿，佛罗里达参议员，曾经的竞选对手变忠实支持者'},
@@ -263,11 +312,30 @@ window.loadDemo=async function(key){
   }
   let ok=0;
   const demoAgentIds=[];
+  const agentNameToId={};
   for(const a of demo.agents){
     try{
       const r=await fetch(API+'/nodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,capabilities:a.capabilities,relationship:a.relationship})});
-      if(r.ok){ok++;const d=await r.json();demoAgentIds.push(d.agent_id);}
+      if(r.ok){ok++;const d=await r.json();demoAgentIds.push(d.agent_id);agentNameToId[a.name]=d.agent_id;}
     }catch{}
+  }
+  // Create demo teams
+  if(demo.teams){
+    for(const tm of demo.teams){
+      try{
+        const tr=await fetch(API+'/teams',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:tm.name,description:tm.description||''})});
+        if(tr.ok){
+          const td=await tr.json();
+          for(const mName of tm.members){
+            const agentId=agentNameToId[mName];
+            if(agentId){
+              const rel=tm.relationships?tm.relationships[mName]||'':'';
+              await fetch(API+'/teams/'+td.team_id+'/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:agentId,relationship:rel})});
+            }
+          }
+        }
+      }catch{}
+    }
   }
   toast(demo.title+' 场景已加载！'+ok+'/'+demo.agents.length+' 个节点注册成功',true);
   // Switch to pipeline and open AI planning with suggested prompt
@@ -313,6 +381,8 @@ async function loadFleet(el){
     const r=await fetch(API+'/nodes/status');
     const d=await r.json();
     cachedAgents=d.agents||[];
+    // Also load teams
+    try{const tr=await fetch(API+'/teams');const td=await tr.json();cachedTeams=td.teams||[]}catch{cachedTeams=[]}
     let h='<div class="section-hd"><h2>碳基算力池</h2><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="showDemoSelector()">&#127918; Demo</button><button class="btn btn-primary btn-sm" onclick="showAddAgent()">+ 添加节点</button></div></div>';
     h+='<div class="stats">';
     h+='<div class="stat"><div class="stat-val">'+d.total+'</div><div class="stat-lbl">总计</div></div>';
@@ -331,6 +401,9 @@ async function loadFleet(el){
       h+='<div class="card"><div class="agent-header"><span class="dot '+a.status+'"></span><span class="agent-name">'+esc(a.name)+'</span></div>';
       h+='<div class="agent-id">'+a.agent_id+'</div>';
       if(a.relationship)h+='<div style="font-size:11px;color:var(--purple);margin-bottom:4px">&#128101; '+esc(a.relationship)+'</div>';
+      // Team badges
+      const agentTeams=cachedTeams.filter(tm=>tm.members&&tm.members.some(m=>m.agent_id===a.agent_id));
+      if(agentTeams.length){h+='<div style="margin-bottom:4px">';for(const tm of agentTeams)h+='<span class="team-badge">'+esc(tm.name)+'</span>';h+='</div>'}
       h+='<div class="caps">';for(const c of a.capabilities)h+='<span class="cap">'+esc(c)+'</span>';h+='</div>';
       h+='<div class="agent-meta"><span>任务: '+a.active_task_count+'</span>';
       if(a.avg_delivery_hours!==null)h+='<span>平均交付: '+a.avg_delivery_hours+'h</span>';
@@ -341,6 +414,23 @@ async function loadFleet(el){
       h+='</select>';
       h+='<button onclick="deleteAgent(\\''+a.agent_id+'\\')">删除</button>';
       h+='</div></div>';
+    }
+    h+='</div>';
+    // Teams section
+    h+='<div style="margin-top:32px"><div class="section-hd"><h2>团队管理</h2><button class="btn btn-primary btn-sm" onclick="showCreateTeam()">+ 创建团队</button></div>';
+    if(cachedTeams.length){
+      h+='<div class="grid">';
+      for(const tm of cachedTeams){
+        const memberCount=tm.members?tm.members.length:0;
+        h+='<div class="card" style="cursor:pointer" onclick="showTeamDetail(\\''+tm.team_id+'\\')">';
+        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">&#128101;</span><span class="agent-name">'+esc(tm.name)+'</span></div>';
+        if(tm.description)h+='<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">'+esc(tm.description)+'</div>';
+        h+='<div style="font-size:11px;color:var(--accent)">'+memberCount+' 个成员</div>';
+        h+='</div>';
+      }
+      h+='</div>';
+    }else{
+      h+='<div style="font-size:12px;color:var(--text-dim);margin-top:8px">暂无团队。创建团队后可按团队分配任务。</div>';
     }
     h+='</div>';
     el.innerHTML=h;
@@ -388,6 +478,95 @@ window.deleteAgent=async function(id){
   }catch{toast('网络错误',false)}
 };
 
+// ─── Team Management ────────────────────────
+window.showCreateTeam=function(){
+  const ov=document.createElement('div');ov.className='overlay';ov.id='overlay';
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  let membersHtml='<div id="team-members-list">';
+  for(const a of cachedAgents){
+    membersHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
+    membersHtml+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" class="tm-check" value="'+a.agent_id+'"/><span class="dot '+a.status+'" style="width:8px;height:8px"></span>'+esc(a.name)+'</label>';
+    membersHtml+='<input class="tm-rel" data-agent="'+a.agent_id+'" placeholder="团队中的关系" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text);outline:none"/>';
+    membersHtml+='</div>';
+  }
+  membersHtml+='</div>';
+  ov.innerHTML='<div class="form-card"><h3>+ 创建团队</h3>'
+    +'<div class="fg"><label>团队名称</label><input id="tm-name" placeholder="例: 前端组"/></div>'
+    +'<div class="fg"><label>团队描述 <span style="color:var(--text-dim);font-weight:400">(可选)</span></label><input id="tm-desc" placeholder="例: 负责所有前端页面开发"/></div>'
+    +'<div class="fg"><label>选择成员及团队关系</label>'+membersHtml+'</div>'
+    +'<div class="btn-group"><button class="btn btn-primary" onclick="submitTeam()">创建团队</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('tm-name').focus();
+};
+window.submitTeam=async function(){
+  const name=document.getElementById('tm-name').value.trim();
+  const desc=document.getElementById('tm-desc').value.trim();
+  if(!name){toast('请输入团队名称',false);return}
+  try{
+    const r=await fetch(API+'/teams',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'创建失败',false);return}
+    const checks=document.querySelectorAll('.tm-check:checked');
+    for(const chk of checks){
+      const agentId=chk.value;
+      const relInput=document.querySelector('.tm-rel[data-agent="'+agentId+'"]');
+      const rel=relInput?relInput.value.trim():'';
+      await fetch(API+'/teams/'+d.team_id+'/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:agentId,relationship:rel})});
+    }
+    toast('团队「'+name+'」创建成功！',true);
+    document.getElementById('overlay').remove();
+    load('fleet');
+  }catch{toast('网络错误',false)}
+};
+window.showTeamDetail=async function(teamId){
+  const ov=document.createElement('div');ov.className='overlay';ov.id='overlay';
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  ov.innerHTML='<div class="form-card"><h3>团队详情</h3><div class="spinner-wrap"><div class="spinner"></div></div></div>';
+  document.body.appendChild(ov);
+  try{
+    const r=await fetch(API+'/teams/'+teamId);
+    const tm=await r.json();
+    if(!r.ok){toast(tm.error||'加载失败',false);ov.remove();return}
+    const fc=ov.querySelector('.form-card');
+    let h='<h3>'+esc(tm.name)+'</h3>';
+    if(tm.description)h+='<div style="font-size:12px;color:var(--text-dim);margin-bottom:16px">'+esc(tm.description)+'</div>';
+    h+='<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;font-family:var(--font-mono)">'+tm.team_id+'</div>';
+    if(tm.members&&tm.members.length){
+      h+='<div style="font-size:13px;font-weight:600;margin-bottom:8px">成员 ('+tm.members.length+')</div>';
+      for(const m of tm.members){
+        h+='<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">';
+        h+='<span class="dot '+(m.agent_status||'IDLE')+'" style="width:8px;height:8px"></span>';
+        h+='<span style="font-size:13px;font-weight:500">'+esc(m.agent_name||m.agent_id)+'</span>';
+        if(m.relationship)h+='<span style="font-size:11px;color:var(--purple);margin-left:auto">'+esc(m.relationship)+'</span>';
+        h+='<button style="margin-left:'+(m.relationship?'8px':'auto')+';background:none;border:none;color:var(--red);cursor:pointer;font-size:14px" onclick="removeTeamMember(\\''+teamId+'\\',\\''+m.agent_id+'\\')">&times;</button>';
+        h+='</div>';
+      }
+    }else{
+      h+='<div style="font-size:12px;color:var(--text-dim)">暂无成员</div>';
+    }
+    h+='<div class="btn-group"><button class="btn btn-danger btn-sm" onclick="deleteTeam(\\''+teamId+'\\')">删除团队</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">关闭</button></div>';
+    fc.innerHTML=h;
+  }catch{toast('加载失败',false);ov.remove()}
+};
+window.removeTeamMember=async function(teamId,agentId){
+  try{
+    await fetch(API+'/teams/'+teamId+'/members/'+agentId,{method:'DELETE'});
+    toast('成员已移除',true);
+    document.getElementById('overlay').remove();
+    showTeamDetail(teamId);
+  }catch{toast('网络错误',false)}
+};
+window.deleteTeam=async function(teamId){
+  if(!confirm('确定删除此团队？'))return;
+  try{
+    const r=await fetch(API+'/teams/'+teamId,{method:'DELETE'});
+    if(!r.ok){toast('删除失败',false);return}
+    toast('团队已删除',true);
+    document.getElementById('overlay').remove();
+    load('fleet');
+  }catch{toast('网络错误',false)}
+};
+
 // ═══════════════════════════════════════════════
 // PIPELINE
 // ═══════════════════════════════════════════════
@@ -419,7 +598,7 @@ async function loadPipeline(el){
       allTasks.push(...j.tasks);
       h+='<div class="job-card"><div class="job-hd"><span class="job-title">'+esc(j.original_prompt)+'</span><span class="job-id">'+j.job_id+'</span></div>';
       h+='<div class="pbar-wrap"><div class="pbar-label">'+res+'/'+tot+' 已完成 ('+pct+'%)</div><div class="pbar"><div class="pbar-fill" style="width:'+pct+'%"></div></div></div>';
-      if(pct===100)h+='<div style="margin-bottom:12px"><button class="btn btn-green btn-sm" onclick="reviewJob(\\''+j.job_id+'\\')">AI 聚合审查</button></div>';
+      if(pct===100)h+='<div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-green btn-sm" onclick="reviewJob(\\''+j.job_id+'\\')">AI 聚合审查</button><button class="btn btn-primary btn-sm" onclick="showEvalDialog(\\''+j.job_id+'\\')">&#128202; 生成绩效评价</button></div>';
       h+='<div class="kanban"><div class="lane"><div class="lane-hd y">已分发 ('+dispatched.length+')</div>'+dispatched.map(tcard).join('')+'</div>';
       h+='<div class="lane"><div class="lane-hd r">已超时 ('+overdue.length+')</div>'+overdue.map(tcard).join('')+'</div>';
       h+='<div class="lane"><div class="lane-hd g">已交付 ('+done.length+')</div>'+done.map(tcard).join('')+'</div></div></div>';
@@ -477,9 +656,24 @@ function renderPlanStep1(ov){
     const el=document.getElementById('agent-chip-area');
     if(el)el.innerHTML=renderChips(chipFilter);
   };
+  window._selectTeam=function(teamId){
+    selectedTeamId=teamId;
+    if(teamId){
+      const tm=cachedTeams.find(t=>t.team_id===teamId);
+      if(tm&&tm.members){
+        selectedAgentIds=new Set(tm.members.map(m=>m.agent_id));
+      }
+    }
+    const el=document.getElementById('agent-chip-area');
+    if(el)el.innerHTML=renderChips(chipFilter);
+    // Re-render to show team hint
+    renderPlanStep1(document.getElementById('overlay'));
+  };
 
   ov.innerHTML='<div class="form-card"><h3>AI 智能规划</h3>'
-    +'<div class="fg"><label>输入你的需求</label><textarea id="plan-prompt" rows="3" placeholder="例: 完成首页重构，包括导航栏、内容区和页脚的响应式改版" style="font-family:var(--font-sans);font-size:13px">'+esc(pendingDemoPrompt)+'</textarea></div>'
+    +'<div class="fg"><label>输入你的需求</label><div class="md-editor"><textarea id="plan-prompt" rows="3" placeholder="例: 完成首页重构，包括导航栏、内容区和页脚的响应式改版" style="font-family:var(--font-sans);font-size:13px">'+esc(pendingDemoPrompt)+'</textarea><button class="md-expand-btn" onclick="toggleFullscreen(this)" title="展开/收起">&#x26F6;</button></div></div>'
+    +'<div class="fg"><label>按团队选择 <span style="color:var(--text-dim);font-weight:400">(可选)</span></label><select id="plan-team" onchange="window._selectTeam(this.value)"><option value="">-- 不按团队 --</option>'+cachedTeams.map(t=>'<option value="'+t.team_id+'"'+(selectedTeamId===t.team_id?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>'
+    +(selectedTeamId?'<div class="hint" style="color:var(--accent)">&#128101; 使用团队关系上下文</div>':'')+'</div>'
     +'<div class="fg"><label>选择参与的碳基节点 <span style="color:var(--text-dim);font-weight:400">(默认选中空闲节点)</span></label>'
     +'<div id="agent-chip-area">'+renderChips('all')+'</div></div>'
     +'<div class="btn-group">'
@@ -500,7 +694,9 @@ window.planWithAI=async function(){
   fc.innerHTML='<h3>AI 智能规划</h3><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">AI 正在分析需求、匹配节点、生成话术...</div></div>';
 
   try{
-    const r=await fetch(API+'/jobs/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,agent_ids:Array.from(selectedAgentIds)})});
+    const reqBody={prompt,agent_ids:Array.from(selectedAgentIds)};
+    if(selectedTeamId)reqBody.team_id=selectedTeamId;
+    const r=await fetch(API+'/jobs/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(reqBody)});
     const d=await r.json();
     if(!r.ok){
       toast(d.error||'规划失败',false);
@@ -613,15 +809,56 @@ window.reviewJob=async function(jobId){
   ov.innerHTML='<div class="form-card"><h3>AI 聚合审查</h3><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">AI 正在审查所有交付物...</div></div></div>';
   document.body.appendChild(ov);
   try{
-    const r=await fetch(API+'/jobs/'+jobId+'/review',{method:'POST'});
+    const r=await fetch(API+'/jobs/'+jobId+'/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
     const d=await r.json();
     if(!r.ok){toast(d.error||'审查失败',false);ov.remove();return}
     const fc=ov.querySelector('.form-card');
     fc.innerHTML='<h3>AI 聚合审查</h3>'
       +'<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">需求: '+esc(d.original_prompt)+'</div>'
-      +'<div class="result-display" style="max-height:400px">'+esc(d.review).replace(/\\n/g,'<br>')+'</div>'
+      +'<div class="md-editor"><div class="result-display" style="max-height:400px">'+esc(d.review).replace(/\\n/g,'<br>')+'</div></div>'
       +'<div style="font-size:10px;color:var(--text-dim);margin-top:8px;font-family:var(--font-mono)">审查时间: '+new Date(d.reviewed_at).toLocaleString()+'</div>'
       +'<div class="btn-group"><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">关闭</button></div>';
+  }catch(e){toast('网络错误: '+e.message,false);ov.remove()}
+};
+
+window.showEvalDialog=function(jobId){
+  const ov=document.createElement('div');ov.className='overlay';ov.id='overlay';
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  ov.innerHTML='<div class="form-card"><h3>&#128202; 生成绩效评价</h3>'
+    +'<div class="fg"><label>评分体系</label><select id="eval-system">'
+    +'<option value="ali">阿里绩效 (3.25 / 3.5 / 3.5+ / 3.75 / 4.0)</option>'
+    +'<option value="letter">SABCD 等级 (S / A / B / C / D)</option>'
+    +'<option value="em">EM/MM 体系 (EM+ / EM / MM+ / MM / MM-)</option>'
+    +'</select></div>'
+    +'<div class="btn-group"><button class="btn btn-primary" onclick="generateEval(\\''+jobId+'\\')">生成评价</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div></div>';
+  document.body.appendChild(ov);
+};
+window.generateEval=async function(jobId){
+  const ratingSystem=document.getElementById('eval-system').value;
+  const ov=document.getElementById('overlay');
+  const fc=ov.querySelector('.form-card');
+  fc.innerHTML='<h3>&#128202; 生成绩效评价</h3><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">AI 正在评估每个碳基节点的表现...</div></div>';
+  try{
+    const r=await fetch(API+'/evaluations/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({job_id:jobId,rating_system:ratingSystem})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'评价生成失败',false);ov.remove();return}
+    let h='<h3>&#128202; 绩效评价结果</h3>';
+    h+='<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;font-family:var(--font-mono)">生成时间: '+new Date(d.generated_at).toLocaleString()+'</div>';
+    const ratingTiers={ali:['4.0','3.75'],letter:['S','A'],em:['EM+','EM']};
+    const lowTiers={ali:['3.25'],letter:['D'],em:['MM-']};
+    for(const ev of d.evaluations){
+      const agent=cachedAgents.find(a=>a.agent_id===ev.agent_id);
+      const isTop=(ratingTiers[ratingSystem]||[]).includes(ev.rating);
+      const isLow=(lowTiers[ratingSystem]||[]).includes(ev.rating);
+      const tier=isTop?'top':isLow?'low':'mid';
+      h+='<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">';
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-weight:600;font-size:13px">'+esc(agent?agent.name:ev.agent_id)+'</span><span class="eval-badge '+tier+'">'+esc(ev.rating)+'</span></div>';
+      h+='<div style="font-size:12px;color:var(--text-dim)">'+esc(ev.comment)+'</div>';
+      h+='<div style="font-size:10px;color:var(--text-dim);margin-top:4px;font-family:var(--font-mono)">任务: '+ev.trace_id+'</div>';
+      h+='</div>';
+    }
+    h+='<div class="btn-group"><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">关闭</button></div>';
+    fc.innerHTML=h;
   }catch(e){toast('网络错误: '+e.message,false);ov.remove()}
 };
 
@@ -645,18 +882,17 @@ window.showTaskDetail=function(traceId){
   h+='<div class="detail-row"><div class="detail-label">截止时间</div><div class="detail-value" style="font-family:var(--font-mono)">'+new Date(t.deadline).toLocaleString()+'</div></div>';
 
   if(t.status==='RESOLVED'&&t.result_data){
-    // Show result
+    // Show result + reject option (manager can reject after reviewing)
     let resultText='';
     if(typeof t.result_data==='object'&&t.result_data){resultText=t.result_data.text||JSON.stringify(t.result_data,null,2)}else{resultText=String(t.result_data||'')}
-    h+='<div class="detail-row"><div class="detail-label">交付结果</div><div class="result-display">'+esc(resultText)+'</div></div>';
-    h+='<div class="btn-group"><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">关闭</button></div>';
+    h+='<div class="detail-row"><div class="detail-label">交付结果</div><div class="md-editor"><div class="result-display">'+esc(resultText)+'</div></div></div>';
+    h+='<div class="btn-group"><button class="btn btn-danger btn-sm" onclick="taskReject(\\''+t.trace_id+'\\')">打回重做 (Reject)</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">关闭</button></div>';
   }else{
-    // Input for resume/reject
-    h+='<div class="fg" style="margin-top:16px"><label>提交 Human 交付物</label><textarea id="td-payload" rows="4" placeholder="粘贴交付物内容、GitHub PR/Commit URL、工作汇报等..."></textarea><div class="hint">支持贴 GitHub URL（PR、Commit、Issue），AI 审查时会分析</div></div>';
+    // Input for resume (no reject for unsubmitted tasks)
+    h+='<div class="fg" style="margin-top:16px"><label>提交 Human 交付物</label><div class="md-editor"><textarea id="td-payload" rows="4" placeholder="粘贴交付物内容、GitHub PR/Commit URL、工作汇报等..."></textarea><button class="md-expand-btn" onclick="toggleFullscreen(this)" title="展开/收起">&#x26F6;</button></div><div class="hint">支持贴 GitHub URL（PR、Commit、Issue），AI 审查时会分析</div></div>';
     h+='<div class="btn-group">';
     h+='<button class="btn btn-primary btn-sm" onclick="simulateDelivery(\\''+t.trace_id+'\\')">&#129302; 模拟交付</button>';
     h+='<button class="btn btn-green" onclick="taskResume(\\''+t.trace_id+'\\')">提交交付 (Resume)</button>';
-    h+='<button class="btn btn-danger" onclick="taskReject(\\''+t.trace_id+'\\')">打回重做 (Reject)</button>';
     h+='<button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button>';
     h+='</div>';
   }
@@ -712,7 +948,7 @@ function loadTerminal(el){
   el.innerHTML='<div class="section-hd"><h2>I/O 交付终端</h2></div>'
     +'<div class="form-card" style="margin-top:12px"><h3>> 提交碳基节点产出</h3>'
     +'<div class="fg"><label>Trace ID (追踪码)</label><input id="t-tid" placeholder="例: TK-9527"/></div>'
-    +'<div class="fg"><label>交付载荷</label><textarea id="t-payload" placeholder="粘贴交付物内容、GitHub PR/Commit URL、工作汇报等..."></textarea><div class="hint">支持贴 GitHub URL（PR、Commit、Issue），AI 审查时会分析</div></div>'
+    +'<div class="fg"><label>交付载荷</label><div class="md-editor"><textarea id="t-payload" placeholder="粘贴交付物内容、GitHub PR/Commit URL、工作汇报等..."></textarea><button class="md-expand-btn" onclick="toggleFullscreen(this)" title="展开/收起">&#x26F6;</button></div><div class="hint">支持贴 GitHub URL（PR、Commit、Issue），AI 审查时会分析</div></div>'
     +'<div class="btn-group"><button class="btn btn-primary" onclick="doResume()">提交并恢复 (Resume)</button><button class="btn btn-danger" onclick="doReject()">打回重做 (Reject)</button></div></div>';
 }
 window.doResume=async function(){
@@ -761,8 +997,8 @@ window.showSettings=async function(){
       statusHtml='<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--red)">&#9888; 未配置 API Key，AI 规划功能不可用</div>';
     }
     fc.innerHTML='<h3>LLM 设置</h3>'+statusHtml
-      +'<div class="fg"><label>提供商</label><select id="cfg-provider"><option value="claude"'+(cfg.provider==='claude'?' selected':'')+'>Claude (Anthropic)</option><option value="openai"'+(cfg.provider==='openai'?' selected':'')+'>OpenAI</option></select></div>'
-      +'<div class="fg"><label>API Key</label><input id="cfg-key" type="password" placeholder="'+(cfg.api_key_set?'已配置，留空则不修改':'输入你的 API Key...')+'"/><div class="hint">Claude: sk-ant-... | OpenAI: sk-...</div></div>'
+      +'<div class="fg"><label>API 格式</label><select id="cfg-provider"><option value="anthropic"'+(cfg.provider==='anthropic'||cfg.provider==='claude'?' selected':'')+'>Anthropic Messages API</option><option value="openai"'+(cfg.provider==='openai'?' selected':'')+'>OpenAI Chat Completions API</option><option value="responses"'+(cfg.provider==='responses'?' selected':'')+'>OpenAI Responses API</option></select><div class="hint">选择 API 格式。自定义 Base URL 可连接任何兼容服务。</div></div>'
+      +'<div class="fg"><label>API Key</label><input id="cfg-key" type="password" placeholder="'+(cfg.api_key_set?'已配置，留空则不修改':'输入你的 API Key...')+'"/><div class="hint">Anthropic: sk-ant-... | OpenAI: sk-...</div></div>'
       +'<div class="fg"><label>模型 <span style="color:var(--text-dim);font-weight:400">(可选，留空用默认)</span></label><input id="cfg-model" value="'+esc(cfg.model||'')+'" placeholder="例: claude-sonnet-4-20250514 / gpt-4o"/></div>'
       +'<div class="fg"><label>API Base URL <span style="color:var(--text-dim);font-weight:400">(可选，留空用官方地址)</span></label><input id="cfg-baseurl" value="'+esc(cfg.base_url||'')+'" placeholder="例: https://your-proxy.com"/><div class="hint">私有部署: 填写你的模型服务地址，如 vLLM / Ollama / Azure 等</div></div>'
       +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div>';

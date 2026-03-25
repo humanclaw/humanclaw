@@ -4,6 +4,7 @@ import {
   createAgent,
   updateAgentStatus,
   deleteAgent,
+  getAgentWithTeams,
 } from '../models/agent.js';
 import { generateId } from '../utils/trace-id.js';
 import type { AgentStatus } from '../models/types.js';
@@ -63,6 +64,16 @@ router.patch('/:agent_id/status', (req, res) => {
   }
 
   res.json({ agent_id, status });
+});
+
+// GET /api/v1/nodes/:agent_id - Get agent with teams
+router.get('/:agent_id', (req, res) => {
+  const agent = getAgentWithTeams(req.params.agent_id);
+  if (!agent) {
+    res.status(404).json({ error: `Agent not found: ${req.params.agent_id}` });
+    return;
+  }
+  res.json(agent);
 });
 
 // DELETE /api/v1/nodes/:agent_id

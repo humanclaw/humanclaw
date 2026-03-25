@@ -7,6 +7,8 @@ import jobsRouter from './routes/jobs.js';
 import tasksRouter from './routes/tasks.js';
 import syncRouter from './routes/sync.js';
 import configRouter from './routes/config.js';
+import teamsRouter from './routes/teams.js';
+import evaluationsRouter from './routes/evaluations.js';
 import { getDashboardHtml } from './dashboard.js';
 
 export function createServer(port = 2026) {
@@ -26,6 +28,8 @@ export function createServer(port = 2026) {
   app.use('/api/v1/tasks', tasksRouter);
   app.use('/api/v1/jobs', syncRouter);
   app.use('/api/v1/config', configRouter);
+  app.use('/api/v1/teams', teamsRouter);
+  app.use('/api/v1/evaluations', evaluationsRouter);
 
   // Serve dashboard as inline HTML (no build step needed)
   const dashboardHtml = getDashboardHtml();

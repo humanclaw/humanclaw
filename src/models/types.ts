@@ -65,11 +65,84 @@ export interface AgentWithMetrics extends HumanAgent {
   avg_delivery_hours: number | null;
 }
 
+// ─── Team Types ──────────────────────────────────────────────────────────────
+
+export interface Team {
+  team_id: string;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface TeamMember {
+  team_id: string;
+  agent_id: string;
+  relationship: string;
+}
+
+export interface TeamWithMembers extends Team {
+  members: (TeamMember & { agent_name: string; agent_status: AgentStatus })[];
+}
+
+export interface TeamRow {
+  team_id: string;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface TeamMemberRow {
+  team_id: string;
+  agent_id: string;
+  relationship: string;
+}
+
+// ─── Evaluation Types ────────────────────────────────────────────────────────
+
+export type RatingSystem = 'ali' | 'letter' | 'em';
+
+export interface Evaluation {
+  eval_id: string;
+  job_id: string;
+  agent_id: string;
+  trace_id: string;
+  rating_system: RatingSystem;
+  rating: string;
+  weight: number;
+  comment: string;
+  created_at: string;
+}
+
+export interface EvaluationRow {
+  eval_id: string;
+  job_id: string;
+  agent_id: string;
+  trace_id: string;
+  rating_system: string;
+  rating: string;
+  weight: number;
+  comment: string;
+  created_at: string;
+}
+
+export interface EvaluationRequest {
+  job_id: string;
+  rating_system: RatingSystem;
+  task_weights?: Record<string, number>;
+}
+
+export interface EvaluationResult {
+  job_id: string;
+  evaluations: Evaluation[];
+  generated_at: string;
+}
+
 // ─── AI Planning Types ──────────────────────────────────────────────────────
 
 export interface PlanRequest {
   prompt: string;
   agent_ids?: string[];
+  team_id?: string;
 }
 
 export interface PlannedTask {

@@ -1,7 +1,7 @@
 {
   "name": "@humanclaw/humanclaw",
-  "version": "1.2.8",
-  "description": "Carbon-based node orchestration framework - treating humans as distributed worker nodes",
+  "version": "2.0.0",
+  "description": "Carbon-based node orchestration framework — humans as distributed worker nodes, with AI planning, team management, and performance evaluation",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -18,7 +18,11 @@
     "distributed",
     "human-in-the-loop",
     "async",
-    "workflow"
+    "workflow",
+    "team-management",
+    "performance-evaluation",
+    "ai-planning",
+    "llm"
   ],
   "bin": {
     "humanclaw": "dist/index.js"

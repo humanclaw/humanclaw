@@ -51,7 +51,7 @@ router.post('/reject', (req, res) => {
 
 // POST /api/v1/tasks/simulate - AI simulate delivery from agent's perspective
 router.post('/simulate', async (req, res) => {
-  const { trace_id } = req.body;
+  const { trace_id, team_id } = req.body;
 
   if (!trace_id) {
     res.status(400).json({ error: 'trace_id is required' });
@@ -59,7 +59,7 @@ router.post('/simulate', async (req, res) => {
   }
 
   try {
-    const result = await simulateDelivery(trace_id);
+    const result = await simulateDelivery(trace_id, undefined, undefined, team_id);
     res.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

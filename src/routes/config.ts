@@ -5,7 +5,8 @@ const router = Router();
 
 // GET /api/v1/config - Get LLM config (masks API key)
 router.get('/', (_req, res) => {
-  const provider = getConfig('llm_provider') || process.env.HUMANCLAW_LLM_PROVIDER || 'claude';
+  const rawProvider = getConfig('llm_provider') || process.env.HUMANCLAW_LLM_PROVIDER || 'anthropic';
+  const provider = rawProvider === 'claude' ? 'anthropic' : rawProvider;
   const apiKey = getConfig('llm_api_key') || process.env.HUMANCLAW_LLM_API_KEY || '';
   const model = getConfig('llm_model') || process.env.HUMANCLAW_LLM_MODEL || '';
   const baseUrl = getConfig('llm_base_url') || process.env.HUMANCLAW_LLM_BASE_URL || '';
@@ -32,11 +33,14 @@ router.put('/', (req, res) => {
   };
 
   if (provider !== undefined) {
-    if (provider !== 'claude' && provider !== 'openai') {
-      res.status(400).json({ error: '不支持的提供商，支持: claude, openai' });
+    // Backward compat: 'claude' -> 'anthropic'
+    const normalized = provider === 'claude' ? 'anthropic' : provider;
+    const validFormats = ['openai', 'anthropic', 'responses'];
+    if (!validFormats.includes(normalized)) {
+      res.status(400).json({ error: `不支持的 API 格式。支持: ${validFormats.join(', ')}` });
       return;
     }
-    setConfig('llm_provider', provider);
+    setConfig('llm_provider', normalized);
   }
 
   if (api_key !== undefined) {

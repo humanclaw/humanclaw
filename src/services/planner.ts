@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3';
 import { getDb } from '../db/connection.js';
 import { listAgentsWithMetrics, getAgent } from '../models/agent.js';
+import { getTeamWithMembers } from '../models/team.js';
 import { createLlmProvider } from '../llm/index.js';
 import type { PlanRequest, PlanResponse, PlannedTask, AgentWithMetrics } from '../models/types.js';
 import type { LlmProvider } from '../llm/types.js';
@@ -30,7 +31,11 @@ function buildSystemPrompt(): string {
 \`\`\``;
 }
 
-function buildUserPrompt(prompt: string, agents: AgentWithMetrics[]): string {
+function buildUserPrompt(
+  prompt: string,
+  agents: AgentWithMetrics[],
+  teamContext?: { name: string; description: string; relationships: Map<string, string> }
+): string {
   const now = new Date();
   const agentList = agents.map(a => {
     const load = a.active_task_count > 0
@@ -39,12 +44,19 @@ function buildUserPrompt(prompt: string, agents: AgentWithMetrics[]): string {
     const speed = a.avg_delivery_hours !== null
       ? `平均交付时间 ${a.avg_delivery_hours}h`
       : '暂无历史数据';
-    const rel = a.relationship ? `  关系: ${a.relationship}` : '';
+    // Use team-contextual relationship if available, fallback to general
+    const relText = teamContext?.relationships.get(a.agent_id) || a.relationship;
+    const rel = relText ? `  关系: ${relText}` : '';
     return `- ${a.name} (ID: ${a.agent_id})  技能: [${a.capabilities.join(', ')}]${rel}  ${load}  ${speed}`;
   }).join('\n');
 
-  return `当前时间: ${now.toISOString()}
+  let teamInfo = '';
+  if (teamContext) {
+    teamInfo = `\n团队: ${teamContext.name}${teamContext.description ? ` — ${teamContext.description}` : ''}\n`;
+  }
 
+  return `当前时间: ${now.toISOString()}
+${teamInfo}
 可用的碳基节点：
 ${agentList}
 
@@ -129,8 +141,29 @@ export async function planJob(
   // Get available agents
   const allAgents = listAgentsWithMetrics(conn);
   let agents: AgentWithMetrics[];
+  let teamContext: { name: string; description: string; relationships: Map<string, string> } | undefined;
 
-  if (request.agent_ids && request.agent_ids.length > 0) {
+  // If team_id specified, use team members as agent pool
+  if (request.team_id) {
+    const team = getTeamWithMembers(request.team_id, conn);
+    if (!team) {
+      throw new Error(`团队不存在: ${request.team_id}`);
+    }
+    if (team.members.length === 0) {
+      throw new Error(`团队 "${team.name}" 中没有成员`);
+    }
+    const memberIds = new Set(team.members.map(m => m.agent_id));
+    agents = allAgents.filter(a => memberIds.has(a.agent_id));
+
+    // Build team relationship map
+    const relationships = new Map<string, string>();
+    for (const m of team.members) {
+      if (m.relationship) {
+        relationships.set(m.agent_id, m.relationship);
+      }
+    }
+    teamContext = { name: team.name, description: team.description, relationships };
+  } else if (request.agent_ids && request.agent_ids.length > 0) {
     agents = allAgents.filter(a => request.agent_ids!.includes(a.agent_id));
     if (agents.length === 0) {
       throw new Error('指定的 Agent 均不存在');
@@ -151,7 +184,7 @@ export async function planJob(
   const llm = provider ?? createLlmProvider();
 
   const systemPrompt = buildSystemPrompt();
-  const userPrompt = buildUserPrompt(request.prompt, agents);
+  const userPrompt = buildUserPrompt(request.prompt, agents, teamContext);
 
   const response = await llm.complete({
     messages: [

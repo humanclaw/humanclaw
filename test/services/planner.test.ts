@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import { initSchema } from '../../src/db/schema.js';
 import { setDb } from '../../src/db/connection.js';
 import { createAgent } from '../../src/models/agent.js';
+import { createTeam, addTeamMember } from '../../src/models/team.js';
 import { planJob } from '../../src/services/planner.js';
 import type { LlmProvider } from '../../src/llm/types.js';
 
@@ -155,5 +156,36 @@ describe('Planner Service', () => {
     // Should have a valid deadline (default: 24h from now)
     const dl = new Date(plan.planned_tasks[0].deadline);
     expect(dl.getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it('should plan with team_id and use team members', async () => {
+    createTeam({ team_id: 'team_001', name: 'Frontend Team', description: '' }, db);
+    addTeamMember('team_001', 'emp_001', '前端骨干', db);
+
+    const provider = mockProvider([
+      {
+        assignee_id: 'emp_001',
+        assignee_name: '前端老李',
+        todo_description: '做页面',
+        briefing: '老李做页面',
+        deadline: '2030-01-01T00:00:00Z',
+      },
+    ]);
+
+    const plan = await planJob({ prompt: '做页面', team_id: 'team_001' }, provider, db);
+    expect(plan.planned_tasks).toHaveLength(1);
+    expect(plan.planned_tasks[0].assignee_id).toBe('emp_001');
+  });
+
+  it('should throw when team has no members', async () => {
+    createTeam({ team_id: 'team_empty', name: 'Empty Team', description: '' }, db);
+
+    const provider = mockProvider([]);
+    await expect(planJob({ prompt: '做任务', team_id: 'team_empty' }, provider, db)).rejects.toThrow('没有成员');
+  });
+
+  it('should throw when team does not exist', async () => {
+    const provider = mockProvider([]);
+    await expect(planJob({ prompt: '做任务', team_id: 'nonexistent' }, provider, db)).rejects.toThrow('团队不存在');
   });
 });

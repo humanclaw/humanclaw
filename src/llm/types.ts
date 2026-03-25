@@ -17,4 +17,7 @@ export interface LlmProvider {
   complete(request: LlmCompletionRequest): Promise<LlmCompletionResponse>;
 }
 
-export type LlmProviderName = 'claude' | 'openai';
+export type LlmApiFormat = 'openai' | 'anthropic' | 'responses';
+
+// Backward compat alias
+export type LlmProviderName = LlmApiFormat;

@@ -21,7 +21,7 @@
 
 HumanClaw 是一个碳基节点编排框架。系统将真实人类抽象为 Agent（碳基节点），将现实中的任务派发与结果收集抽象为进程的**挂起（Suspend）**与**恢复（Resume）**。
 
-核心流程：输入自然语言需求 → 选人 → AI 自动规划（拆任务 + 生成话术 + 设 DDL）→ 确认分发 → 收交付物 → AI 聚合审查。
+核心流程：输入自然语言需求 → 选人/选团队 → AI 自动规划（拆任务 + 生成话术 + 设 DDL）→ 确认分发 → 收交付物 → AI 聚合审查 → 绩效评价。
 
 ## 核心架构
 
@@ -31,19 +31,20 @@ HumanClaw 是一个碳基节点编排框架。系统将真实人类抽象为 Age
 │   Master    │     trace_id      │  HumanAgent  │
 │  (老板/PM)  │ ◄──────────────   │  (碳基算力)   │
 │             │   Resume + Result │              │
-└─────┬───────┘                   └──────────────┘
-      │
-      │  AI Review
-      ▼
-┌─────────────┐
-│  LLM 审查   │
-│ (Claude/GPT)│
-└─────────────┘
+└─────┬───────┘                   └──────┬───────┘
+      │                                  │
+      │  AI Review + Eval           Team Context
+      ▼                                  ▼
+┌─────────────┐                   ┌──────────────┐
+│  LLM 审查   │                   │   团队管理    │
+│ + 绩效评价  │                   │ (关系 & 权重) │
+└─────────────┘                   └──────────────┘
 ```
 
 - **Master 节点**：输入需求，AI 自动拆解为独立子任务，分发给碳基节点
 - **Worker 节点 (HumanAgent)**：接收带 `trace_id` 的独立任务，在碳基世界异步执行
-- **AI 审查**：所有任务完成后，LLM 自动审查交付质量并生成报告
+- **团队管理**：碳基节点按团队组织，每个团队有独立的关系上下文
+- **AI 审查 + 绩效评价**：所有任务完成后，LLM 审查交付质量并生成报告和绩效评分
 
 ## 快速开始
 
@@ -83,76 +84,98 @@ humanclaw agent list
 
 ## API 接口
 
+### 碳基节点
+
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | `GET` | `/api/v1/nodes/status` | 碳基算力池状态 |
 | `POST` | `/api/v1/nodes` | 注册碳基节点 |
+| `GET` | `/api/v1/nodes/:id` | 获取节点详情（含团队） |
 | `PATCH` | `/api/v1/nodes/:id/status` | 更新节点状态 |
-| `POST` | `/api/v1/jobs/plan` | AI 智能规划（不分发） |
+| `DELETE` | `/api/v1/nodes/:id` | 删除节点 |
+
+### 任务编排
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` | `/api/v1/jobs/plan` | AI 智能规划（支持 `team_id`） |
 | `POST` | `/api/v1/jobs/create` | 创建并分发任务 |
 | `GET` | `/api/v1/jobs/active` | 获取看板数据 |
 | `POST` | `/api/v1/tasks/resume` | 提交交付物，触发恢复 |
 | `POST` | `/api/v1/tasks/reject` | 打回重做 |
 | `POST` | `/api/v1/tasks/simulate` | AI 模拟交付（角色扮演） |
-| `POST` | `/api/v1/jobs/:id/review` | AI 聚合审查交付质量 |
+| `POST` | `/api/v1/jobs/:id/review` | AI 聚合审查（支持评分体系） |
+
+### 团队管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `GET` | `/api/v1/teams` | 团队列表（含成员） |
+| `GET` | `/api/v1/teams/:id` | 团队详情 |
+| `POST` | `/api/v1/teams` | 创建团队 |
+| `DELETE` | `/api/v1/teams/:id` | 删除团队 |
+| `POST` | `/api/v1/teams/:id/members` | 添加成员 |
+| `DELETE` | `/api/v1/teams/:id/members/:agent_id` | 移除成员 |
+| `PUT` | `/api/v1/teams/:id/members/:agent_id` | 更新成员团队关系 |
+
+### 绩效评价
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` | `/api/v1/evaluations/generate` | 生成绩效评价 |
+| `GET` | `/api/v1/evaluations/job/:job_id` | 按 Job 查询评价 |
+| `GET` | `/api/v1/evaluations/agent/:agent_id` | 按 Agent 查询评价历史 |
+| `GET` | `/api/v1/evaluations/dashboard` | 绩效看板 |
+
+### LLM 配置
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
 | `GET` | `/api/v1/config` | 获取 LLM 配置 |
 | `PUT` | `/api/v1/config` | 更新 LLM 配置 |
-
-### AI 规划示例
-
-```bash
-curl -X POST http://localhost:2026/api/v1/jobs/plan \
-  -H "Content-Type: application/json" \
-  -d '{ "prompt": "完成首页重构" }'
-```
-
-### 提交交付物
-
-```bash
-curl -X POST http://localhost:2026/api/v1/tasks/resume \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trace_id": "TK-9527",
-    "result_data": { "text": "https://github.com/org/repo/pull/42" }
-  }'
-```
 
 ## Dashboard 看板
 
 Web 看板包含三个核心视图：
 
-- **碳基算力池** — 实时查看碳基节点状态（🟢空闲 🟡忙碌 🔴离线 🟣崩溃），一键添加/删除节点
-- **碳基编排大盘** — AI 智能规划 + 任务看板 + 可交互任务卡片（点击直接提交交付/打回）+ 模拟交付 + AI 聚合审查
+- **碳基算力池** — 实时查看碳基节点状态（🟢空闲 🟡忙碌 🔴离线 🟣崩溃），团队管理，一键添加/删除节点
+- **碳基编排大盘** — AI 智能规划（可按团队）+ 任务看板 + 模拟交付 + AI 聚合审查 + 绩效评价
 - **I/O 交付终端** — 输入 trace_id 和交付载荷，触发系统恢复
 
 ### AI 功能
 
-- **智能规划** — 输入需求，AI 自动拆任务、匹配碳基节点、生成布置话术、设 DDL（可调）
+- **智能规划** — 输入需求，AI 自动拆任务、匹配碳基节点、生成布置话术、设 DDL（支持按团队规划，注入团队关系上下文）
 - **模拟交付** — 点击按钮，AI 以碳基节点视角角色扮演，根据身份、技能、关系生成模拟交付物
 - **聚合审查** — 全部交付后，AI 审查每个交付物质量（支持 GitHub PR/Commit/Issue URL），生成评分报告
-- **可配置 LLM** — 支持 Claude / OpenAI，可自定义 Base URL 接入私有模型服务（vLLM / Ollama / Azure）
+- **绩效评价** — 支持三种评分体系（阿里 3.75 / SABCD / EM+MM-），AI 生成按人按任务的绩效评分和评语
+- **可配置 LLM** — 支持 3 种 API 格式（Anthropic Messages / OpenAI Chat Completions / OpenAI Responses），可自定义 Base URL 接入私有模型服务
+
+### 可伸缩编辑器
+
+所有文本编辑区域（任务交付、审查结果、规划话术）均支持拖拽调整大小和全屏展开。
 
 ### Demo 场景
 
-Dashboard 内置三个开箱即用的 Demo 场景，一键加载即可体验：
+Dashboard 内置三个开箱即用的 Demo 场景，一键加载碳基节点和团队：
 
-- **三国蜀汉** 🐉 — 你是刘备，底下有关羽、张飞、赵云、诸葛亮等七员大将
-- **互联网大厂** 💻 — 你是技术总监，管理前端、后端、算法、产品、设计、测试、运维团队
-- **美国政府** 🇺🇸 — 你是特朗普，指挥 Musk、Rubio、Bessent 等核心内阁
+- **三国蜀汉** 🐉 — 你是刘备，底下有五虎上将和谋士团两个团队
+- **互联网大厂** 💻 — 你是技术总监，管理前端组、后端组、产品组、质量组
+- **美国政府** 🇺🇸 — 你是特朗普，指挥经济安全团队、国防外交团队、国内事务团队
 
 ## 核心工作流
 
-1. **镜像封装** — 录入碳基成员信息，构建碳基算力池
-2. **AI 规划** — 输入需求，AI 拆解任务、匹配节点、生成话术和 DDL
+1. **镜像封装** — 录入碳基成员信息，建立团队，构建碳基算力池
+2. **AI 规划** — 输入需求，选择团队/节点，AI 拆解任务、生成话术和 DDL
 3. **确认分发** — 预览规划结果，调整 DDL，确认后一键分发
 4. **异步恢复** — 碳基节点提交交付物（支持 GitHub URL），系统唤醒 Job
 5. **AI 审查** — 所有子任务完成后，LLM 审查交付质量并生成报告
+6. **绩效评价** — 选择评分体系，AI 生成每个碳基节点的绩效评分
 
 ## 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `HUMANCLAW_LLM_PROVIDER` | `claude` | LLM 提供商：`claude` 或 `openai` |
+| `HUMANCLAW_LLM_PROVIDER` | `anthropic` | API 格式：`anthropic` / `openai` / `responses` |
 | `HUMANCLAW_LLM_API_KEY` | - | LLM API Key（使用 AI 功能时必填） |
 | `HUMANCLAW_LLM_MODEL` | 按 provider | 可选覆盖模型名 |
 | `HUMANCLAW_LLM_BASE_URL` | 官方地址 | 自定义 API 地址（私有部署） |
@@ -170,14 +193,21 @@ interface HumanAgent {
   status: AgentStatus;    // IDLE | BUSY | OFFLINE | OOM
 }
 
-interface HumanTask {
-  trace_id: string;       // TK-9527
-  job_id: string;
-  assignee_id: string;
-  todo_description: string;
-  deadline: string;
-  status: TaskStatus;     // PENDING | DISPATCHED | RESOLVED | OVERDUE
-  result_data: unknown;
+interface Team {
+  team_id: string;        // team_xxxxxxxx
+  name: string;           // "前端组"
+  description: string;
+  members: TeamMember[];  // 含团队关系
+}
+
+interface Evaluation {
+  eval_id: string;
+  agent_id: string;
+  trace_id: string;
+  rating_system: 'ali' | 'letter' | 'em';
+  rating: string;         // "3.75" / "A" / "EM+"
+  weight: number;
+  comment: string;
 }
 ```
 
@@ -197,10 +227,10 @@ npm run lint       # 类型检查
 - **Runtime**: Node.js 22+, TypeScript (ESM, strict)
 - **API**: Express v5
 - **Storage**: SQLite (better-sqlite3, WAL mode)
-- **LLM**: Claude / OpenAI（原生 fetch，零依赖）
+- **LLM**: 3 种 API 格式（Anthropic / OpenAI / Responses），原生 fetch，零依赖
 - **CLI**: Commander.js + @clack/prompts
 - **Dashboard**: 内联 HTML（无需构建）
-- **Testing**: Vitest (40 tests)
+- **Testing**: Vitest (68 tests)
 
 ## License
 

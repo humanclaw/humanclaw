@@ -76,6 +76,27 @@ export function deleteAgent(
   return result.changes > 0;
 }
 
+export function getAgentWithTeams(
+  agentId: string,
+  db?: Database.Database
+): (HumanAgent & { teams: Array<{ team_id: string; team_name: string; relationship: string }> }) | undefined {
+  const conn = db ?? getDb();
+  const agent = getAgent(agentId, conn);
+  if (!agent) return undefined;
+
+  const teams = conn
+    .prepare(
+      `SELECT t.team_id, t.name AS team_name, tm.relationship
+       FROM team_members tm
+       JOIN teams t ON tm.team_id = t.team_id
+       WHERE tm.agent_id = ?
+       ORDER BY t.created_at`
+    )
+    .all(agentId) as Array<{ team_id: string; team_name: string; relationship: string }>;
+
+  return { ...agent, teams };
+}
+
 export function listAgentsWithMetrics(
   db?: Database.Database
 ): AgentWithMetrics[] {

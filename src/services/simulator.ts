@@ -2,6 +2,7 @@ import type Database from 'better-sqlite3';
 import { getDb } from '../db/connection.js';
 import { getAgent } from '../models/agent.js';
 import { getTask } from '../models/task.js';
+import { getTeamMemberRelationship } from '../models/team.js';
 import { createLlmProvider } from '../llm/index.js';
 import type { LlmProvider } from '../llm/types.js';
 
@@ -37,7 +38,8 @@ ${taskDescription}
 export async function simulateDelivery(
   traceId: string,
   provider?: LlmProvider,
-  db?: Database.Database
+  db?: Database.Database,
+  teamId?: string
 ): Promise<SimulateResult> {
   const conn = db ?? getDb();
 
@@ -49,6 +51,13 @@ export async function simulateDelivery(
   const agent = getAgent(task.assignee_id, conn);
   if (!agent) {
     throw new Error(`Agent not found: ${task.assignee_id}`);
+  }
+
+  // Use team-contextual relationship if available, fallback to general
+  let relationship = agent.relationship;
+  if (teamId) {
+    const teamRel = getTeamMemberRelationship(teamId, agent.agent_id, conn);
+    if (teamRel) relationship = teamRel;
   }
 
   const llm = provider ?? createLlmProvider();
@@ -63,7 +72,7 @@ export async function simulateDelivery(
         role: 'user',
         content: buildSimulatePrompt(
           agent.name,
-          agent.relationship,
+          relationship,
           agent.capabilities,
           task.todo_description,
           task.deadline
