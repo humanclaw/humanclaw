@@ -95,8 +95,8 @@ describe('Evaluator Service', () => {
       db
     );
 
-    // Middle of ['EM+', 'EM', 'MM+', 'MM', 'MM-'] is index 2 = 'MM+'
-    expect(result.evaluations[0].rating).toBe('MM+');
+    // Middle of ['E', 'M+', 'M', 'M-', 'L'] is index 2 = 'M'
+    expect(result.evaluations[0].rating).toBe('M');
   });
 
   it('should throw when job is not complete', async () => {

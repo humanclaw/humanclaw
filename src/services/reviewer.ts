@@ -39,7 +39,7 @@ function buildReviewSystemPrompt(ratingSystem?: RatingSystem): string {
     const systemLabels: Record<RatingSystem, string> = {
       ali: '阿里绩效体系',
       letter: 'SABCD 等级',
-      em: 'EM/MM 绩效体系',
+      em: 'EM 绩效体系',
     };
     base += `
 

@@ -147,7 +147,7 @@ The web dashboard includes three core views:
 - **Smart Planning** — Input requirements, AI auto-breaks tasks, matches nodes, generates briefings, sets deadlines (supports team-based planning with team relationship context injection)
 - **Simulate Delivery** — Click a button, AI role-plays as the worker node based on identity, skills, and relationships to generate mock deliverables
 - **Aggregated Review** — After all deliveries, AI reviews each deliverable (supports GitHub PR/Commit/Issue URLs), generates quality report
-- **Performance Evaluation** — Three rating systems (Ali 3.75 / SABCD / EM+MM-), AI generates per-person per-task performance ratings and comments
+- **Performance Evaluation** — Three rating systems (Ali 3.75 / SABCD / EM), AI generates per-person per-task performance ratings and comments
 - **Configurable LLM** — Supports 3 API formats (Anthropic Messages / OpenAI Chat Completions / OpenAI Responses), custom Base URL for private model services
 
 ### Resizable Editors

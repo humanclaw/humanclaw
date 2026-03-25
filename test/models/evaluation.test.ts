@@ -64,11 +64,11 @@ describe('Evaluation Model', () => {
   });
 
   it('should list evaluations by agent', () => {
-    createEvaluation({ eval_id: 'eval_001', job_id: jobId, agent_id: 'emp_001', trace_id: traceId, rating_system: 'em', rating: 'EM+', weight: 1, comment: '' }, db);
+    createEvaluation({ eval_id: 'eval_001', job_id: jobId, agent_id: 'emp_001', trace_id: traceId, rating_system: 'em', rating: 'E', weight: 1, comment: '' }, db);
 
     const evals = listEvaluationsByAgent('emp_001', db);
     expect(evals).toHaveLength(1);
-    expect(evals[0].rating).toBe('EM+');
+    expect(evals[0].rating).toBe('E');
   });
 
   it('should delete evaluations by job', () => {
@@ -84,13 +84,13 @@ describe('Evaluation Model', () => {
     expect(validateRating('ali', '5.0')).toBe(false);
     expect(validateRating('letter', 'S')).toBe(true);
     expect(validateRating('letter', 'F')).toBe(false);
-    expect(validateRating('em', 'EM+')).toBe(true);
+    expect(validateRating('em', 'E')).toBe(true);
     expect(validateRating('em', 'X')).toBe(false);
   });
 
   it('should have correct rating systems', () => {
     expect(RATING_SYSTEMS.ali).toEqual(['3.25', '3.5', '3.5+', '3.75', '4.0']);
     expect(RATING_SYSTEMS.letter).toEqual(['S', 'A', 'B', 'C', 'D']);
-    expect(RATING_SYSTEMS.em).toEqual(['EM+', 'EM', 'MM+', 'MM', 'MM-']);
+    expect(RATING_SYSTEMS.em).toEqual(['E', 'M+', 'M', 'M-', 'L']);
   });
 });

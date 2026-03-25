@@ -34,7 +34,7 @@ function buildEvalPrompt(
   const systemLabels: Record<RatingSystem, string> = {
     ali: '阿里绩效体系（3.25=不合格, 3.5=基本达标, 3.5+=达标, 3.75=优秀, 4.0=卓越）',
     letter: 'SABCD 等级（S=卓越, A=优秀, B=达标, C=待改进, D=不合格）',
-    em: 'EM/MM 体系（EM+=远超预期, EM=超出预期, MM+=达标, MM=基本达标, MM-=不达标）',
+    em: 'EM 体系（E=远超预期, M+=超出预期, M=达标, M-=基本达标, L=不达标）',
   };
 
   let prompt = `原始需求: ${originalPrompt}\n\n`;

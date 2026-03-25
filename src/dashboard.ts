@@ -848,7 +848,7 @@ window.showEvalDialog=function(jobId){
     +'<div class="fg"><label>评分体系</label><select id="eval-system">'
     +'<option value="ali">阿里绩效 (3.25 / 3.5 / 3.5+ / 3.75 / 4.0)</option>'
     +'<option value="letter">SABCD 等级 (S / A / B / C / D)</option>'
-    +'<option value="em">EM/MM 体系 (EM+ / EM / MM+ / MM / MM-)</option>'
+    +'<option value="em">EM 体系 (E / M+ / M / M- / L)</option>'
     +'</select></div>'
     +'<div class="btn-group"><button class="btn btn-primary" onclick="generateEval(\\''+jobId+'\\')">生成评价</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div></div>';
   document.body.appendChild(ov);
@@ -864,8 +864,8 @@ window.generateEval=async function(jobId){
     if(!r.ok){toast(d.error||'评价生成失败',false);ov.remove();return}
     let h='<h3>&#128202; 绩效评价结果</h3>';
     h+='<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;font-family:var(--font-mono)">生成时间: '+new Date(d.generated_at).toLocaleString()+'</div>';
-    const ratingTiers={ali:['4.0','3.75'],letter:['S','A'],em:['EM+','EM']};
-    const lowTiers={ali:['3.25'],letter:['D'],em:['MM-']};
+    const ratingTiers={ali:['4.0','3.75'],letter:['S','A'],em:['E','M+']};
+    const lowTiers={ali:['3.25'],letter:['D'],em:['L']};
     for(const ev of d.evaluations){
       const agent=cachedAgents.find(a=>a.agent_id===ev.agent_id);
       const isTop=(ratingTiers[ratingSystem]||[]).includes(ev.rating);

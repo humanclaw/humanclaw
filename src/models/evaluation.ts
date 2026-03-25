@@ -9,7 +9,7 @@ import type {
 export const RATING_SYSTEMS: Record<RatingSystem, readonly string[]> = {
   ali: ['3.25', '3.5', '3.5+', '3.75', '4.0'],
   letter: ['S', 'A', 'B', 'C', 'D'],
-  em: ['EM+', 'EM', 'MM+', 'MM', 'MM-'],
+  em: ['E', 'M+', 'M', 'M-', 'L'],
 } as const;
 
 export function validateRating(system: RatingSystem, rating: string): boolean {
