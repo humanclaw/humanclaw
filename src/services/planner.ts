@@ -3,16 +3,26 @@ import { getDb } from '../db/connection.js';
 import { listAgentsWithMetrics, getAgent } from '../models/agent.js';
 import { getTeamWithMembers } from '../models/team.js';
 import { createLlmProvider } from '../llm/index.js';
+import { getConfig } from '../models/config.js';
 import type { PlanRequest, PlanResponse, PlannedTask, AgentWithMetrics } from '../models/types.js';
 import type { LlmProvider } from '../llm/types.js';
 
-function buildSystemPrompt(): string {
+export type RespectLevel = 'high' | 'medium' | 'low';
+
+const BRIEFING_STYLE: Record<RespectLevel, string> = {
+  high: '语气像一个靠谱的项目经理在给组员分配任务：尊重对方、说明背景和意义、表达信任与期待，同时清晰传达交付物要求。',
+  medium: '语气直接、简洁、务实，说清楚做什么和交付什么，省略客套话，但保持基本礼貌。',
+  low: '纯指令口吻，冷冰冰，没有任何铺垫或缓冲。直接告诉对方做什么、交什么、什么时候交。不需要解释原因，不需要鼓励，不需要任何礼貌用语。',
+};
+
+function buildSystemPrompt(respectLevel: RespectLevel): string {
+  const briefingStyle = BRIEFING_STYLE[respectLevel];
   return `你是 HumanClaw 任务编排规划器。你的工作是将用户的需求拆解为可以分发给碳基节点（真实人类）执行的独立子任务。
 
 规则：
 1. 将需求拆解为扁平的、无依赖的子任务列表（每个任务可以独立执行）
 2. 根据每个 Agent 的技能（capabilities）和当前负载来匹配分配
-3. 为每个任务生成一段「话术」—— 这是直接发给该人类执行者的任务说明，语气自然、清晰、专业，包含具体的交付物要求
+3. 为每个任务生成一段「话术」—— 这是直接发给该人类执行者的任务说明，包含具体的交付物要求。话术风格要求：${briefingStyle}
 4. 根据任务复杂度设置合理的截止时间（相对于当前时间）
 5. 任务分配应以最佳匹配为原则，同一个 Agent 可以承担多个任务
 
@@ -183,7 +193,11 @@ export async function planJob(
   // Get LLM provider
   const llm = provider ?? createLlmProvider();
 
-  const systemPrompt = buildSystemPrompt();
+  const rawLevel = getConfig('respect_level', conn) ?? 'high';
+  const respectLevel: RespectLevel = (['high', 'medium', 'low'] as const).includes(rawLevel as RespectLevel)
+    ? (rawLevel as RespectLevel)
+    : 'high';
+  const systemPrompt = buildSystemPrompt(respectLevel);
   const userPrompt = buildUserPrompt(request.prompt, agents, teamContext);
 
   const response = await llm.complete({

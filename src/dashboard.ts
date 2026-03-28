@@ -1021,7 +1021,8 @@ window.showSettings=async function(){
       +'<div class="fg"><label>API Key</label><input id="cfg-key" type="password" placeholder="'+(cfg.api_key_set?'已配置，留空则不修改':'输入你的 API Key...')+'"/><div class="hint">Anthropic: sk-ant-... | OpenAI: sk-...</div></div>'
       +'<div class="fg"><label>模型 <span style="color:var(--text-dim);font-weight:400">(可选，留空用默认)</span></label><input id="cfg-model" value="'+esc(cfg.model||'')+'" placeholder="例: claude-sonnet-4-20250514 / gpt-4o"/></div>'
       +'<div class="fg"><label>API Base URL <span style="color:var(--text-dim);font-weight:400">(可选，留空用官方地址)</span></label><input id="cfg-baseurl" value="'+esc(cfg.base_url||'')+'" placeholder="例: https://your-proxy.com"/><div class="hint">私有部署: 填写你的模型服务地址，如 vLLM / Ollama / Azure 等</div></div>'
-      +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div>'
+      +'<div class="fg"><label>话术尊重程度</label><select id="cfg-respect"><option value="high"'+(cfg.respect_level==='high'||!cfg.respect_level?' selected':'')+'>High — 尊重、有温度，像靠谱的项目经理</option><option value="medium"'+(cfg.respect_level==='medium'?' selected':'')+'>Medium — 直接务实，省略客套</option><option value="low"'+(cfg.respect_level==='low'?' selected':'')+'>Low — 纯指令，冷冰冰，没有任何缓冲</option></select><div class="hint">控制 AI 给碳基节点生成任务话术时的语气风格</div></div>'
+      +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\'overlay\').remove()">取消</button></div>'
       +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">&#9888; 危险操作</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
       +'<button class="btn btn-sm btn-danger" onclick="resetAllData()">清空所有数据</button>'
@@ -1037,10 +1038,12 @@ window.saveSettings=async function(){
   const apiKey=document.getElementById('cfg-key').value.trim();
   const model=document.getElementById('cfg-model').value.trim();
   const baseUrl=document.getElementById('cfg-baseurl').value.trim();
+  const respectLevel=document.getElementById('cfg-respect').value;
   const body={provider};
   if(apiKey)body.api_key=apiKey;
   body.model=model;
   body.base_url=baseUrl;
+  body.respect_level=respectLevel;
   try{
     const r=await fetch(API+'/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!r.ok){const d=await r.json();toast(d.error||'保存失败',false);return}

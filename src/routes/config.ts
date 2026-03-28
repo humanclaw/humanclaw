@@ -25,16 +25,18 @@ router.get('/', (_req, res) => {
     api_key_source: keySource,
     model,
     base_url: baseUrl,
+    respect_level: getConfig('respect_level') ?? 'high',
   });
 });
 
 // PUT /api/v1/config - Update LLM config
 router.put('/', (req, res) => {
-  const { provider, api_key, model, base_url } = req.body as {
+  const { provider, api_key, model, base_url, respect_level } = req.body as {
     provider?: string;
     api_key?: string;
     model?: string;
     base_url?: string;
+    respect_level?: string;
   };
 
   if (provider !== undefined) {
@@ -70,6 +72,15 @@ router.put('/', (req, res) => {
     } else {
       setConfig('llm_base_url', base_url);
     }
+  }
+
+  if (respect_level !== undefined) {
+    const valid = ['high', 'medium', 'low'];
+    if (!valid.includes(respect_level)) {
+      res.status(400).json({ error: `无效的 respect_level。可选: ${valid.join(', ')}` });
+      return;
+    }
+    setConfig('respect_level', respect_level);
   }
 
   res.json({ ok: true });
