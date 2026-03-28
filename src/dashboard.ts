@@ -1022,7 +1022,12 @@ window.showSettings=async function(){
       +'<div class="fg"><label>模型 <span style="color:var(--text-dim);font-weight:400">(可选，留空用默认)</span></label><input id="cfg-model" value="'+esc(cfg.model||'')+'" placeholder="例: claude-sonnet-4-20250514 / gpt-4o"/></div>'
       +'<div class="fg"><label>API Base URL <span style="color:var(--text-dim);font-weight:400">(可选，留空用官方地址)</span></label><input id="cfg-baseurl" value="'+esc(cfg.base_url||'')+'" placeholder="例: https://your-proxy.com"/><div class="hint">私有部署: 填写你的模型服务地址，如 vLLM / Ollama / Azure 等</div></div>'
       +'<div class="btn-group"><button class="btn btn-primary" onclick="saveSettings()">保存</button><button class="btn btn-ghost" onclick="document.getElementById(\\'overlay\\').remove()">取消</button></div>'
-      +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">&#9888; 危险操作</div><button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="resetAllData()">一键清空所有数据</button><div class="hint">清空所有节点、团队、任务和评价数据，可重新加载 Demo 场景。LLM 配置不受影响。</div></div>';
+      +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">&#9888; 危险操作</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn btn-sm btn-danger" onclick="resetAllData()">清空所有数据</button>'
+      +'<button class="btn btn-sm" style="background:var(--purple);color:#fff" onclick="showResetToDemo()">恢复出厂配置</button>'
+      +'</div>'
+      +'<div class="hint" style="margin-top:6px">清空全部数据；或恢复出厂配置（清空并加载 Demo 场景）。LLM 配置不受影响。</div></div>';
   }catch{
     ov.querySelector('.form-card').innerHTML='<h3>LLM 设置</h3><p style="color:var(--red)">加载配置失败</p>';
   }
@@ -1050,6 +1055,37 @@ window.resetAllData=async function(){
     if(!r.ok){toast('清空失败',false);return}
     toast('所有数据已清空',true);
     const ov=document.getElementById('overlay');if(ov)ov.remove();
+    load('fleet');
+  }catch{toast('网络错误',false)}
+};
+window.showResetToDemo=function(){
+  const demoOptions=[
+    {key:'sanguo',emoji:'🐉',title:'三国蜀汉',role:'你是刘备',agents:'关羽、张飞、赵云、诸葛亮、庞统、黄忠、马超'},
+    {key:'tech',emoji:'💻',title:'互联网大厂',role:'你是技术总监',agents:'前端老李、后端大王、算法小陈、产品经理 Amy、设计师小林、测试老赵、运维阿杰'},
+    {key:'gov',emoji:'🇺🇸',title:'美国政府',role:'你是特朗普',agents:'Musk、Rubio、Hegseth、Bessent、Noem、Gabbard、RFK Jr.'},
+  ];
+  let h='<div style="margin-bottom:16px"><div style="font-size:15px;font-weight:600;margin-bottom:4px">恢复出厂配置</div><div style="font-size:12px;color:var(--text-dim)">清空所有数据，加载所选 Demo 场景的节点和团队。LLM 配置不受影响。</div></div>';
+  for(const d of demoOptions){
+    h+='<div onclick="resetToDemo(\\''+d.key+'\\')" style="background:var(--surface-hover);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor=\\'var(--accent)\\'" onmouseout="this.style.borderColor=\\'var(--border)\\'">';
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-size:22px">'+d.emoji+'</span><div><div style="font-weight:600;font-size:13px">'+d.title+'</div><div style="font-size:11px;color:var(--accent);font-family:var(--font-mono)">'+d.role+'</div></div></div>';
+    h+='<div style="font-size:11px;color:var(--text-dim)">'+d.agents+'</div>';
+    h+='</div>';
+  }
+  h+='<div class="btn-group"><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\\'overlay-rtd\\').remove()">取消</button></div>';
+  const ov2=document.createElement('div');ov2.className='overlay';ov2.id='overlay-rtd';
+  ov2.addEventListener('click',e=>{if(e.target===ov2)ov2.remove()});
+  ov2.innerHTML='<div class="form-card" style="max-width:440px">'+h+'</div>';
+  document.body.appendChild(ov2);
+};
+window.resetToDemo=async function(key){
+  if(!confirm('确定恢复出厂配置？\\n\\n当前所有节点、团队、任务、评价将被清空，并加载「'+key+'」Demo 场景。'))return;
+  document.getElementById('overlay-rtd')?.remove();
+  document.getElementById('overlay')?.remove();
+  try{
+    const r=await fetch(API+'/config/reset-to-demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({demo:key})});
+    if(!r.ok){const d=await r.json();toast(d.error||'恢复失败',false);return}
+    const d=await r.json();
+    toast('已恢复出厂配置：'+d.agents_created+' 个节点已加载',true);
     load('fleet');
   }catch{toast('网络错误',false)}
 };

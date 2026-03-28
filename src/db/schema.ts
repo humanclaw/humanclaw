@@ -21,7 +21,7 @@ export function initSchema(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS tasks (
       trace_id         TEXT PRIMARY KEY,
       job_id           TEXT NOT NULL REFERENCES jobs(job_id) ON DELETE CASCADE,
-      assignee_id      TEXT NOT NULL REFERENCES agents(agent_id),
+      assignee_id      TEXT NOT NULL REFERENCES agents(agent_id) ON DELETE CASCADE,
       todo_description TEXT NOT NULL,
       deadline         TEXT NOT NULL,
       payload          TEXT NOT NULL DEFAULT '{}',
@@ -77,5 +77,40 @@ export function initSchema(db: Database.Database): void {
   const cols = db.prepare("PRAGMA table_info(agents)").all() as Array<{ name: string }>;
   if (!cols.some(c => c.name === 'relationship')) {
     db.exec(`ALTER TABLE agents ADD COLUMN relationship TEXT NOT NULL DEFAULT ''`);
+  }
+
+  // Migration: rebuild tasks table to add ON DELETE CASCADE on assignee_id
+  const tasksTableSql = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'")
+    .get() as { sql: string } | undefined;
+  if (tasksTableSql && !tasksTableSql.sql.includes('agents(agent_id) ON DELETE CASCADE')) {
+    db.exec(`
+      PRAGMA foreign_keys = OFF;
+
+      ALTER TABLE tasks RENAME TO tasks_old;
+
+      CREATE TABLE tasks (
+        trace_id         TEXT PRIMARY KEY,
+        job_id           TEXT NOT NULL REFERENCES jobs(job_id) ON DELETE CASCADE,
+        assignee_id      TEXT NOT NULL REFERENCES agents(agent_id) ON DELETE CASCADE,
+        todo_description TEXT NOT NULL,
+        deadline         TEXT NOT NULL,
+        payload          TEXT NOT NULL DEFAULT '{}',
+        status           TEXT NOT NULL DEFAULT 'PENDING'
+                         CHECK (status IN ('PENDING', 'DISPATCHED', 'RESOLVED', 'OVERDUE')),
+        result_data      TEXT,
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      INSERT INTO tasks SELECT * FROM tasks_old;
+      DROP TABLE tasks_old;
+
+      CREATE INDEX IF NOT EXISTS idx_tasks_job_id ON tasks(job_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_assignee_id ON tasks(assignee_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+
+      PRAGMA foreign_keys = ON;
+    `);
   }
 }

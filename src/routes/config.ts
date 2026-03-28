@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { getConfig, setConfig, deleteConfig } from '../models/config.js';
 import { getDb } from '../db/connection.js';
+import { createAgent } from '../models/agent.js';
+import { createTeam, addTeamMember } from '../models/team.js';
+import { generateId } from '../utils/trace-id.js';
+import { DEMOS } from '../utils/demos.js';
 
 const router = Router();
 
@@ -83,6 +87,57 @@ router.post('/reset', (_req, res) => {
     DELETE FROM agents;
   `);
   res.json({ ok: true });
+});
+
+// POST /api/v1/config/reset-to-demo - Clear all data and load a demo scenario
+router.post('/reset-to-demo', (req, res) => {
+  const { demo } = req.body as { demo?: string };
+
+  if (!demo || !DEMOS[demo]) {
+    res.status(400).json({ error: `未知 Demo: ${demo}。可选: ${Object.keys(DEMOS).join(', ')}` });
+    return;
+  }
+
+  const db = getDb();
+  db.exec(`
+    DELETE FROM evaluations;
+    DELETE FROM team_members;
+    DELETE FROM tasks;
+    DELETE FROM jobs;
+    DELETE FROM teams;
+    DELETE FROM agents;
+  `);
+
+  const scenario = DEMOS[demo];
+  const nameToId: Record<string, string> = {};
+
+  for (const a of scenario.agents) {
+    const agent = createAgent({
+      agent_id: generateId('emp'),
+      name: a.name,
+      capabilities: a.capabilities,
+      relationship: a.relationship,
+      status: 'IDLE',
+    }, db);
+    nameToId[a.name] = agent.agent_id;
+  }
+
+  for (const t of scenario.teams) {
+    const team = createTeam({
+      team_id: generateId('team'),
+      name: t.name,
+      description: t.description,
+    }, db);
+
+    for (const memberName of t.members) {
+      const agentId = nameToId[memberName];
+      if (agentId) {
+        addTeamMember(team.team_id, agentId, t.relationships[memberName] ?? '', db);
+      }
+    }
+  }
+
+  res.json({ ok: true, demo, agents_created: scenario.agents.length });
 });
 
 export default router;
