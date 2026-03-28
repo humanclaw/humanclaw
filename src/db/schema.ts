@@ -80,15 +80,23 @@ export function initSchema(db: Database.Database): void {
   }
 
   // Migration: rebuild tasks table to add ON DELETE CASCADE on assignee_id
+  // Clean up any leftover tasks_old from a previously failed migration
+  const tasksOldExists = db
+    .prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='tasks_old'")
+    .get();
+  if (tasksOldExists) {
+    db.exec('DROP TABLE tasks_old;');
+  }
+
   const tasksTableSql = db
     .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'")
     .get() as { sql: string } | undefined;
   if (tasksTableSql && !tasksTableSql.sql.includes('agents(agent_id) ON DELETE CASCADE')) {
+    // Run each statement separately — PRAGMA foreign_keys must not be inside
+    // a multi-statement exec() block as it won't take effect inside a transaction
+    db.pragma('foreign_keys = OFF');
+    db.exec('ALTER TABLE tasks RENAME TO tasks_old;');
     db.exec(`
-      PRAGMA foreign_keys = OFF;
-
-      ALTER TABLE tasks RENAME TO tasks_old;
-
       CREATE TABLE tasks (
         trace_id         TEXT PRIMARY KEY,
         job_id           TEXT NOT NULL REFERENCES jobs(job_id) ON DELETE CASCADE,
@@ -102,15 +110,12 @@ export function initSchema(db: Database.Database): void {
         created_at       TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
       );
-
-      INSERT INTO tasks SELECT * FROM tasks_old;
-      DROP TABLE tasks_old;
-
-      CREATE INDEX IF NOT EXISTS idx_tasks_job_id ON tasks(job_id);
-      CREATE INDEX IF NOT EXISTS idx_tasks_assignee_id ON tasks(assignee_id);
-      CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
-
-      PRAGMA foreign_keys = ON;
     `);
+    db.exec('INSERT INTO tasks SELECT * FROM tasks_old;');
+    db.exec('DROP TABLE tasks_old;');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_job_id ON tasks(job_id);');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_assignee_id ON tasks(assignee_id);');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);');
+    db.pragma('foreign_keys = ON');
   }
 }
