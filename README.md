@@ -235,3 +235,7 @@ npm run lint       # 类型检查
 ## License
 
 [MIT](./LICENSE)
+
+---
+
+> **Orchestrate Humans, but Humanely.**
