@@ -1,6 +1,6 @@
 {
   "name": "@humanclaw/humanclaw",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Carbon-based node orchestration framework — humans as distributed worker nodes, with AI planning, team management, and performance evaluation",
   "type": "module",
   "license": "MIT",
