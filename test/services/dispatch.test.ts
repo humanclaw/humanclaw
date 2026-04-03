@@ -93,6 +93,6 @@ describe('Dispatch Service', () => {
     });
 
     expect(job.tasks[0].trace_id).not.toBe(job.tasks[1].trace_id);
-    expect(job.tasks[0].trace_id).toMatch(/^TK-\d{4}$/);
+    expect(job.tasks[0].trace_id).toMatch(/^TK-[A-Za-z0-9_-]{8}$/);
   });
 });
