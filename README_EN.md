@@ -9,7 +9,7 @@
 [![npm](https://img.shields.io/npm/v/@humanclaw/humanclaw)](https://www.npmjs.com/package/@humanclaw/humanclaw)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**中文** | [English](./README_EN.md)
+[中文](./README.md) | **English**
 
 [Documentation Site](https://humanclaw.github.io/humanclaw/)
 
@@ -181,6 +181,16 @@ The dashboard includes three built-in demo scenarios, one-click to load carbon-b
 | `HUMANCLAW_LLM_BASE_URL` | official | Custom API URL (private deployments) |
 
 > Dashboard settings panel can also configure these, with higher priority than env vars.
+
+### Briefing Tone (respect_level)
+
+Configure the tone AI uses when generating task briefings via the Dashboard settings panel:
+
+| Value | Description |
+|-------|-------------|
+| `high` (default) | Respectful and warm, like a reliable project manager |
+| `medium` | Direct and pragmatic, minimal pleasantries |
+| `low` | Pure instructions, cold, no softening |
 
 ## Data Models
 

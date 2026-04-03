@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import { Command } from 'commander';
 import * as p from '@clack/prompts';
 import chalk from 'chalk';
@@ -12,6 +13,9 @@ import { planJob } from './services/planner.js';
 import { generateId } from './utils/trace-id.js';
 import type { AgentStatus } from './models/types.js';
 
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json') as { version: string };
+
 const program = new Command();
 
 program
@@ -19,7 +23,7 @@ program
   .description(
     'Carbon-based node orchestration framework - treating humans as distributed worker nodes'
   )
-  .version('1.0.0');
+  .version(version);
 
 // ─── serve ───────────────────────────────────────────────────────────────────
 
